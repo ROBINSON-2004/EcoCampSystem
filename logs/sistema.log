@@ -1,0 +1,167 @@
+[2025-12-16 21:15:49] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2025-12-16 22:06:38] [INFO] Cierre de sesión: admin@campamento.com
+[2025-12-16 22:14:34] [INFO] Nuevo padre registrado: jennifer@gmail.com
+[2025-12-16 22:15:14] [WARNING] Intento de inicio de sesión fallido: jennifer@gmail.com
+[2025-12-16 22:16:41] [INFO] Inicio de sesión exitoso: jennifer@gmail.com
+[2025-12-16 22:17:05] [INFO] Cierre de sesión: jennifer@gmail.com
+[2025-12-17 21:13:24] [INFO] Inicio de sesión exitoso: jennifer@gmail.com
+[2025-12-17 21:16:33] [INFO] Cierre de sesión: jennifer@gmail.com
+[2025-12-17 21:17:46] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2025-12-17 21:17:52] [INFO] Cierre de sesión: admin@campamento.com
+[2025-12-17 21:17:59] [WARNING] Intento de inicio de sesión fallido: admin@campamento.com
+[2025-12-17 21:18:11] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2025-12-17 21:23:16] [INFO] Cierre de sesión: admin@campamento.com
+[2025-12-17 21:23:52] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2025-12-17 21:50:39] [INFO] Campista creado: ID 1
+[2025-12-17 21:51:17] [INFO] Estado de campista cambiado: ID 1 a aprobado
+[2025-12-17 21:51:58] [INFO] Estado de campista cambiado: ID 1 a pendiente
+[2025-12-17 21:52:20] [INFO] Cierre de sesión: admin@campamento.com
+[2025-12-17 21:52:40] [INFO] Inicio de sesión exitoso: jennifer@gmail.com
+[2025-12-18 14:28:46] [INFO] Cierre de sesión: jennifer@gmail.com
+[2025-12-18 14:29:15] [WARNING] Intento de inicio de sesión fallido: jennifer@gmail.com
+[2025-12-18 14:29:43] [INFO] Inicio de sesión exitoso: jennifer@gmail.com
+[2025-12-18 14:54:24] [INFO] Cierre de sesión: jennifer@gmail.com
+[2025-12-18 14:54:56] [WARNING] Intento de inicio de sesión fallido: jennifer@gamil.com
+[2025-12-18 14:55:51] [INFO] Inicio de sesión exitoso: jennifer@gmail.com
+[2025-12-18 15:05:51] [INFO] Cierre de sesión: jennifer@gmail.com
+[2025-12-18 15:09:11] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2025-12-18 15:10:17] [INFO] Cierre de sesión: admin@campamento.com
+[2025-12-18 15:11:18] [WARNING] Intento de inicio de sesión fallido: jennifer@gmail.com
+[2025-12-18 15:11:47] [INFO] Inicio de sesión exitoso: jennifer@gmail.com
+[2025-12-18 15:13:03] [INFO] Cierre de sesión: jennifer@gmail.com
+[2025-12-18 15:24:27] [WARNING] Intento de inicio de sesión fallido: admin@campamento.com
+[2025-12-18 15:25:08] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2025-12-18 15:25:37] [INFO] Campista actualizado: ID 1
+[2025-12-18 17:51:53] [INFO] Cierre de sesión: admin@campamento.com
+[2025-12-18 17:52:37] [WARNING] Intento de inicio de sesión fallido: admin@administrador.gmail.com
+[2025-12-18 17:53:19] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2025-12-18 17:55:59] [INFO] Campista actualizado: ID 1
+[2025-12-18 17:56:18] [INFO] Cierre de sesión: admin@campamento.com
+[2025-12-18 17:56:42] [INFO] Inicio de sesión exitoso: jennifer@gmail.com
+[2025-12-18 18:01:02] [INFO] Cierre de sesión: jennifer@gmail.com
+[2025-12-18 18:26:41] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2025-12-18 18:27:19] [INFO] Campista actualizado: ID 1
+[2025-12-18 18:28:36] [INFO] Padre actualizado: ID 1
+[2025-12-18 18:29:28] [INFO] Padre reactivado: ID Usuario 2
+[2025-12-18 18:29:32] [INFO] Padre reactivado: ID Usuario 2
+[2025-12-18 18:29:42] [INFO] Padre actualizado: ID 1
+[2025-12-18 18:30:04] [INFO] Cierre de sesión: admin@campamento.com
+[2025-12-18 18:30:21] [WARNING] Intento de inicio de sesión fallido: jennifer@gmail.com
+[2025-12-18 18:30:43] [INFO] Inicio de sesión exitoso: jennifer@gmail.com
+[2025-12-18 18:31:47] [INFO] Campista creado: ID 2
+[2025-12-18 18:33:23] [INFO] Cierre de sesión: jennifer@gmail.com
+[2025-12-18 18:33:28] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2025-12-18 18:33:46] [INFO] Campista actualizado: ID 1
+[2025-12-18 18:33:59] [INFO] Campista actualizado: ID 2
+[2025-12-18 18:35:01] [INFO] Inicio de sesión exitoso: jennifer@gmail.com
+[2025-12-19 11:12:44] [WARNING] Intento de inicio de sesión fallido: admin@administrador.com
+[2025-12-19 11:13:07] [WARNING] Intento de inicio de sesión fallido: admin@administrador.com
+[2025-12-19 11:13:39] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2025-12-19 11:14:50] [INFO] Padre desactivado: ID Usuario 2
+[2025-12-19 11:15:01] [INFO] Padre reactivado: ID Usuario 2
+[2025-12-19 11:15:11] [INFO] Padre reactivado: ID Usuario 2
+[2025-12-19 11:15:21] [INFO] Padre reactivado: ID Usuario 2
+[2025-12-19 11:15:28] [INFO] Padre actualizado: ID 1
+[2025-12-19 11:15:39] [INFO] Cierre de sesión: admin@campamento.com
+[2025-12-19 11:15:57] [INFO] Inicio de sesión exitoso: jennifer@gmail.com
+[2025-12-19 11:16:50] [INFO] Cierre de sesión: jennifer@gmail.com
+[2025-12-19 11:17:24] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2025-12-19 11:17:46] [INFO] Cierre de sesión: admin@campamento.com
+[2025-12-19 11:26:43] [INFO] Nuevo padre registrado: kelly@gmail.com
+[2025-12-19 11:28:57] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2025-12-19 11:29:47] [INFO] Padre actualizado: ID 2
+[2025-12-19 11:29:55] [INFO] Padre desactivado: ID Usuario 3
+[2025-12-19 11:30:21] [INFO] Padre reactivado: ID Usuario 3
+[2025-12-19 11:30:25] [INFO] Padre reactivado: ID Usuario 3
+[2025-12-19 11:30:36] [INFO] Padre actualizado: ID 2
+[2025-12-19 11:31:13] [INFO] Cierre de sesión: admin@campamento.com
+[2025-12-19 11:32:47] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2025-12-19 11:33:10] [INFO] Padre desactivado: ID Usuario 3
+[2025-12-19 11:33:25] [INFO] Padre reactivado: ID Usuario 3
+[2025-12-19 11:33:42] [INFO] Padre actualizado: ID 2
+[2025-12-19 11:34:39] [INFO] Cierre de sesión: admin@campamento.com
+[2025-12-19 11:35:10] [INFO] Inicio de sesión exitoso: kelly@gmail.com
+[2025-12-19 11:36:50] [INFO] Campista creado: ID 3
+[2025-12-19 11:37:47] [INFO] Cierre de sesión: kelly@gmail.com
+[2025-12-19 11:39:49] [INFO] Inicio de sesión exitoso: kelly@gmail.com
+[2025-12-19 11:40:19] [INFO] Campista creado: ID 4
+[2025-12-19 11:41:49] [INFO] Cierre de sesión: kelly@gmail.com
+[2025-12-19 11:42:26] [INFO] Inicio de sesión exitoso: kelly@gmail.com
+[2025-12-19 11:42:59] [INFO] Campista creado: ID 5
+[2025-12-19 11:43:30] [INFO] Cierre de sesión: kelly@gmail.com
+[2025-12-19 11:43:47] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2025-12-19 11:44:43] [INFO] Estado de campista cambiado: ID 5 a aprobado
+[2025-12-19 11:45:08] [INFO] Estado de campista cambiado: ID 5 a rechazado
+[2025-12-19 11:46:11] [INFO] Cierre de sesión: admin@campamento.com
+[2025-12-19 11:47:10] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2025-12-19 11:47:57] [INFO] Estado de campista cambiado: ID 5 a pendiente
+[2025-12-19 11:49:03] [INFO] Campista creado: ID 6
+[2025-12-19 11:49:29] [INFO] Estado de campista cambiado: ID 6 a aprobado
+[2025-12-19 11:56:21] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-01-08 20:19:13] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-01-08 20:29:28] [INFO] Campista creado: ID 7
+[2026-01-08 20:39:55] [INFO] Campista actualizado: ID 7
+[2026-01-08 20:40:00] [INFO] Campista eliminado: ID 7
+[2026-01-08 20:40:20] [INFO] Campista actualizado: ID 7
+[2026-01-08 20:40:26] [INFO] Estado de campista cambiado: ID 7 a aprobado
+[2026-01-08 20:43:13] [INFO] Cierre de sesión: admin@campamento.com
+[2026-01-08 20:43:34] [WARNING] Intento de inicio de sesión fallido: jennifer@gmail.com
+[2026-01-08 20:43:49] [INFO] Inicio de sesión exitoso: jennifer@gmail.com
+[2026-01-08 20:47:35] [INFO] Inicio de sesión exitoso: kelly@gmail.com
+[2026-01-08 20:48:38] [INFO] Cierre de sesión: kelly@gmail.com
+[2026-01-08 20:48:49] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-01-08 21:25:50] [INFO] Cierre de sesión: admin@campamento.com
+[2026-01-08 21:28:24] [INFO] Cierre de sesión: jennifer@gmail.com
+[2026-01-08 21:29:33] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-01-08 21:37:54] [INFO] Cierre de sesión: admin@campamento.com
+[2026-01-08 21:41:55] [INFO] Nuevo padre registrado: ana@gmail.com
+[2026-01-08 21:46:31] [INFO] Inicio de sesión exitoso: ana@gmail.com
+[2026-01-09 01:37:43] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-01-09 02:05:44] [INFO] Padre actualizado: ID 3
+[2026-01-09 02:09:05] [INFO] Grupo creado: ID 1
+[2026-01-09 02:09:16] [INFO] Campista 7 asignado al grupo 1
+[2026-01-09 02:23:04] [INFO] Cierre de sesión: admin@campamento.com
+[2026-01-09 02:23:25] [INFO] Inicio de sesión exitoso: jennifer@gmail.com
+[2026-01-09 03:48:38] [INFO] Cierre de sesión: jennifer@gmail.com
+[2026-01-09 03:49:00] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-01-09 04:04:34] [WARNING] Intento de inicio de sesión fallido: admin@administrador.com
+[2026-01-09 04:04:54] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-01-09 04:10:17] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-01-09 04:12:31] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-01-09 04:13:08] [WARNING] Intento de inicio de sesión fallido: jennifer@gamil.com
+[2026-01-09 04:13:29] [INFO] Inicio de sesión exitoso: jennifer@gmail.com
+[2026-01-09 04:16:43] [INFO] Inicio de sesión exitoso: kelly@gmail.com
+[2026-01-09 04:17:36] [INFO] Inicio de sesión exitoso: kelly@gmail.com
+[2026-01-09 04:21:38] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-01-09 04:31:12] [INFO] Cierre de sesión: Usuario desconocido
+[2026-01-09 04:31:32] [WARNING] Intento de inicio de sesión fallido: admin@administrador.com
+[2026-01-09 04:32:42] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-01-09 04:53:07] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-01-09 04:53:36] [INFO] Cierre de sesión: admin@campamento.com
+[2026-01-09 04:53:57] [INFO] Inicio de sesión exitoso: jennifer@gmail.com
+[2026-01-09 04:54:12] [INFO] Campista actualizado: ID 2
+[2026-01-09 04:54:39] [INFO] Cierre de sesión: jennifer@gmail.com
+[2026-01-09 04:54:52] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-01-09 04:57:07] [INFO] Cierre de sesión: admin@campamento.com
+[2026-01-09 10:20:39] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-01-09 10:52:29] [INFO] Grupo eliminado: ID 1
+[2026-01-09 10:53:06] [INFO] Grupo creado: ID 2
+[2026-01-09 10:53:15] [INFO] Campista 7 asignado al grupo 2
+[2026-01-09 10:55:19] [INFO] Cierre de sesión: admin@campamento.com
+[2026-01-09 10:55:45] [INFO] Inicio de sesión exitoso: jennifer@gmail.com
+[2026-01-09 10:55:56] [INFO] Campista actualizado: ID 2
+[2026-01-09 10:56:07] [INFO] Campista actualizado: ID 2
+[2026-01-09 11:03:42] [INFO] Campista creado: ID 8
+[2026-01-09 11:04:21] [INFO] Campista actualizado: ID 2
+[2026-01-09 11:05:21] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-01-09 11:05:43] [INFO] Estado de campista cambiado: ID 8 a aprobado
+[2026-01-09 11:07:08] [INFO] Campista creado: ID 9
+[2026-01-09 11:08:23] [INFO] Campista creado: ID 10
+[2026-01-09 11:08:55] [INFO] Cierre de sesión: jennifer@gmail.com
+[2026-01-09 11:09:11] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-01-09 11:10:24] [INFO] Grupo creado: ID 3
+[2026-01-09 11:10:32] [INFO] Campista 10 asignado al grupo 3
+[2026-01-09 11:10:36] [INFO] Campista 8 asignado al grupo 3
+[2026-01-09 11:11:17] [INFO] Grupo creado: ID 4
+[2026-01-09 11:11:18] [INFO] Campista 10 asignado al grupo 4
+[2026-01-09 11:11:18] [INFO] Campista 8 asignado al grupo 4
