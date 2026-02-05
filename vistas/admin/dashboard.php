@@ -125,15 +125,7 @@ $campistas_hoy = $stmt->fetchColumn();
                     Registrar Asistencia
                 </a>
                 
-                <a href="<?php echo URL_BASE; ?>/vistas/admin/formularios/lista.php" class="action-btn">
-                    <span class="icon">📄</span>
-                    Formularios
-                </a>
-                
-                <a href="<?php echo URL_BASE; ?>/vistas/admin/notificaciones/enviar.php" class="action-btn">
-                    <span class="icon">📧</span>
-                    Notificaciones
-                </a>
+
 
             </div>
         </div>
