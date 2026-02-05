@@ -1,7 +1,8 @@
 <?php
-require_once __DIR__ . '/../utilidades/sesion.php';
-require_once __DIR__ . '/../utilidades/funciones.php';
-require_once __DIR__ . '/../controladores/AsistenciaControlador.php';
+require_once __DIR__ . '/../../../config/constantes.php';
+
+require_once RUTA_UTILIDADES . '/funciones.php';
+require_once RUTA_CONTROLADORES . '/AsistenciaControlador.php';
 
 // Verificar que sea una solicitud POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

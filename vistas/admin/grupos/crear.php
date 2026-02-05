@@ -1,8 +1,8 @@
 <?php
 require_once __DIR__ . '/../../../config/constantes.php';
-require_once __DIR__ . '/../../../utilidades/sesion.php';
-require_once __DIR__ . '/../../../utilidades/funciones.php';
-require_once __DIR__ . '/../../../controladores/GrupoControlador.php';
+require_once RUTA_UTILIDADES . '/sesion.php';
+require_once RUTA_UTILIDADES . '/funciones.php';
+require_once RUTA_CONTROLADORES . '/GrupoControlador.php';
 
 Sesion::requerirTipoUsuario(TIPO_ADMINISTRADOR);
 

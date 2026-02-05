@@ -1,6 +1,5 @@
 <?php
-require_once __DIR__ . '/../config/conexion.php';
-
+require_once RUTA_CONFIG . '/conexion.php';
 /**
  * Clase Campista
  * Modelo para gestionar campistas

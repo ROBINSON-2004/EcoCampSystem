@@ -1,16 +1,15 @@
 <?php
-require_once __DIR__ . '/../config/conexion.php';
+require_once RUTA_CONFIG . '/conexion.php';
 
 /**
  * Clase Actividad
- * Modelo para gestionar el catálogo de actividades y su programación
+ * Modelo para gestionar actividades del campamento
  */
 class Actividad {
     private $conexion;
     private $tabla = 'actividades';
-    private $tabla_programada = 'actividades_programadas';
     
-    // Propiedades de Actividad (Catálogo)
+    // Propiedades
     public $id_actividad;
     public $nombre_actividad;
     public $descripcion;
@@ -23,78 +22,148 @@ class Actividad {
     public $materiales_necesarios;
     public $instrucciones;
     public $estado;
-
-    /**
-     * Constructor
-     */
+    
     public function __construct() {
         $database = new Conexion();
         $this->conexion = $database->obtenerConexion();
     }
-
+    
     /**
-     * Crea una nueva actividad en el catálogo
+     * Crea una nueva actividad
      */
     public function crear() {
         $consulta = "INSERT INTO " . $this->tabla . " 
-                    (nombre_actividad, descripcion, tipo_actividad, ubicacion, duracion_minutos, 
-                     capacidad_maxima, edad_minima, edad_maxima, materiales_necesarios, instrucciones, estado)
-                    VALUES (:nombre, :descripcion, :tipo, :ubicacion, :duracion, :capacidad, :emin, :emax, :materiales, :instrucciones, :estado)";
+                    (nombre_actividad, descripcion, tipo_actividad, ubicacion, duracion_minutos,
+                     capacidad_maxima, edad_minima, edad_maxima, materiales_necesarios, 
+                     instrucciones, estado)
+                    VALUES (:nombre, :descripcion, :tipo, :ubicacion, :duracion,
+                            :capacidad, :edad_min, :edad_max, :materiales, :instrucciones, :estado)";
         
         $stmt = $this->conexion->prepare($consulta);
-
-        // Limpieza de datos (Siguiendo tu estilo en Usuario.php)
+        
         $this->nombre_actividad = htmlspecialchars(strip_tags($this->nombre_actividad));
-        $this->tipo_actividad = htmlspecialchars(strip_tags($this->tipo_actividad));
-        $this->ubicacion = htmlspecialchars(strip_tags($this->ubicacion));
-
+        $this->descripcion = htmlspecialchars(strip_tags($this->descripcion));
+        
         $stmt->bindParam(':nombre', $this->nombre_actividad);
         $stmt->bindParam(':descripcion', $this->descripcion);
         $stmt->bindParam(':tipo', $this->tipo_actividad);
         $stmt->bindParam(':ubicacion', $this->ubicacion);
         $stmt->bindParam(':duracion', $this->duracion_minutos);
         $stmt->bindParam(':capacidad', $this->capacidad_maxima);
-        $stmt->bindParam(':emin', $this->edad_minima);
-        $stmt->bindParam(':emax', $this->edad_maxima);
+        $stmt->bindParam(':edad_min', $this->edad_minima);
+        $stmt->bindParam(':edad_max', $this->edad_maxima);
         $stmt->bindParam(':materiales', $this->materiales_necesarios);
         $stmt->bindParam(':instrucciones', $this->instrucciones);
         $stmt->bindParam(':estado', $this->estado);
-
+        
         if ($stmt->execute()) {
             return $this->conexion->lastInsertId();
         }
         return false;
     }
-
+    
     /**
-     * Programa una actividad para un grupo específico
+     * Lee una actividad por ID
      */
-    public function programarActividad($datos) {
-        $consulta = "INSERT INTO " . $this->tabla_programada . " 
-                    (id_actividad, id_grupo, fecha_actividad, hora_inicio, hora_fin, id_responsable, observaciones)
-                    VALUES (:id_act, :id_grp, :fecha, :h_inicio, :h_fin, :id_resp, :obs)";
-        
+    public function leerPorId() {
+        $consulta = "SELECT * FROM " . $this->tabla . " WHERE id_actividad = :id LIMIT 1";
         $stmt = $this->conexion->prepare($consulta);
+        $stmt->bindParam(':id', $this->id_actividad);
+        $stmt->execute();
         
-        $stmt->bindParam(':id_act', $datos['id_actividad']);
-        $stmt->bindParam(':id_grp', $datos['id_grupo']);
-        $stmt->bindParam(':fecha', $datos['fecha_actividad']);
-        $stmt->bindParam(':h_inicio', $datos['hora_inicio']);
-        $stmt->bindParam(':h_fin', $datos['hora_fin']);
-        $stmt->bindParam(':id_resp', $datos['id_responsable']);
-        $stmt->bindParam(':obs', $datos['observaciones']);
-
-        return $stmt->execute();
+        $fila = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($fila) {
+            $this->nombre_actividad = $fila['nombre_actividad'];
+            $this->descripcion = $fila['descripcion'];
+            $this->tipo_actividad = $fila['tipo_actividad'];
+            $this->ubicacion = $fila['ubicacion'];
+            $this->duracion_minutos = $fila['duracion_minutos'];
+            $this->capacidad_maxima = $fila['capacidad_maxima'];
+            $this->edad_minima = $fila['edad_minima'];
+            $this->edad_maxima = $fila['edad_maxima'];
+            $this->materiales_necesarios = $fila['materiales_necesarios'];
+            $this->instrucciones = $fila['instrucciones'];
+            $this->estado = $fila['estado'];
+            return true;
+        }
+        return false;
     }
-
+    
     /**
-     * Obtiene las actividades programadas filtradas (VISTA_ACTIVIDADES_HOY)
+     * Obtiene todas las actividades
      */
-    public function leerProgramadasHoy() {
-        $consulta = "SELECT * FROM vista_actividades_hoy";
+    public function leerTodas($tipo = null, $estado = null) {
+        $consulta = "SELECT * FROM " . $this->tabla . " WHERE 1=1";
+        
+        if ($tipo) {
+            $consulta .= " AND tipo_actividad = :tipo";
+        }
+        if ($estado) {
+            $consulta .= " AND estado = :estado";
+        }
+        
+        $consulta .= " ORDER BY nombre_actividad ASC";
+        
         $stmt = $this->conexion->prepare($consulta);
+        
+        if ($tipo) {
+            $stmt->bindParam(':tipo', $tipo);
+        }
+        if ($estado) {
+            $stmt->bindParam(':estado', $estado);
+        }
+        
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    /**
+     * Actualiza una actividad
+     */
+    public function actualizar() {
+        $consulta = "UPDATE " . $this->tabla . "
+                    SET nombre_actividad = :nombre,
+                        descripcion = :descripcion,
+                        tipo_actividad = :tipo,
+                        ubicacion = :ubicacion,
+                        duracion_minutos = :duracion,
+                        capacidad_maxima = :capacidad,
+                        edad_minima = :edad_min,
+                        edad_maxima = :edad_max,
+                        materiales_necesarios = :materiales,
+                        instrucciones = :instrucciones,
+                        estado = :estado
+                    WHERE id_actividad = :id";
+        
+        $stmt = $this->conexion->prepare($consulta);
+        
+        $this->nombre_actividad = htmlspecialchars(strip_tags($this->nombre_actividad));
+        $this->descripcion = htmlspecialchars(strip_tags($this->descripcion));
+        
+        $stmt->bindParam(':nombre', $this->nombre_actividad);
+        $stmt->bindParam(':descripcion', $this->descripcion);
+        $stmt->bindParam(':tipo', $this->tipo_actividad);
+        $stmt->bindParam(':ubicacion', $this->ubicacion);
+        $stmt->bindParam(':duracion', $this->duracion_minutos);
+        $stmt->bindParam(':capacidad', $this->capacidad_maxima);
+        $stmt->bindParam(':edad_min', $this->edad_minima);
+        $stmt->bindParam(':edad_max', $this->edad_maxima);
+        $stmt->bindParam(':materiales', $this->materiales_necesarios);
+        $stmt->bindParam(':instrucciones', $this->instrucciones);
+        $stmt->bindParam(':estado', $this->estado);
+        $stmt->bindParam(':id', $this->id_actividad);
+        
+        return $stmt->execute();
+    }
+    
+    /**
+     * Elimina una actividad (soft delete)
+     */
+    public function eliminar() {
+        $consulta = "UPDATE " . $this->tabla . " SET estado = 'inactivo' WHERE id_actividad = :id";
+        $stmt = $this->conexion->prepare($consulta);
+        $stmt->bindParam(':id', $this->id_actividad);
+        return $stmt->execute();
     }
 }
 ?>

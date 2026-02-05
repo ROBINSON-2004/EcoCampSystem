@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/../modelos/InformacionMedica.php';
-require_once __DIR__ . '/../modelos/InformacionEmergencia.php';
+require_once RUTA_MODELOS . '/InformacionMedica.php';
+require_once RUTA_MODELOS . '/InformacionEmergencia.php';
 
 class EmergenciaControlador {
     

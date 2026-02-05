@@ -1,9 +1,9 @@
 <?php
 require_once __DIR__ . '/../../../config/constantes.php';
-require_once __DIR__ . '/../../../utilidades/sesion.php';
-require_once __DIR__ . '/../../../utilidades/funciones.php';
-require_once __DIR__ . '/../../../controladores/GrupoControlador.php';
-require_once __DIR__ . '/../../../config/Conexion.php'; // Asegúrate de incluir la clase Conexion
+require_once RUTA_UTILIDADES . '/sesion.php';
+require_once RUTA_UTILIDADES . '/funciones.php';
+require_once RUTA_CONTROLADORES . '/GrupoControlador.php';
+require_once RUTA_CONFIG . '/conexion.php'; // Asegúrate de incluir la clase Conexion
 
 Sesion::requerirTipoUsuario(TIPO_ADMINISTRADOR);
 

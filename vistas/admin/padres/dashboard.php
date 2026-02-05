@@ -1,9 +1,9 @@
 <?php
 require_once __DIR__ . '/../../config/constantes.php';
-require_once __DIR__ . '/../../utilidades/sesion.php';
-require_once __DIR__ . '/../../utilidades/funciones.php';
-require_once __DIR__ . '/../../modelos/Padre.php';
-require_once __DIR__ . '/../../modelos/Campista.php';
+require_once RUTA_UTILIDADES . '/sesion.php';
+require_once RUTA_UTILIDADES . '/funciones.php';
+require_once RUTA_MODELOS . '/Padre.php';
+require_once RUTA_MODELOS . '/Campista.php';
 
 // Verificar que sea padre
 Sesion::requerirTipoUsuario(TIPO_PADRE);

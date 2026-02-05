@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../config/constantes.php';
-require_once __DIR__ . '/../utilidades/funciones.php';
-require_once __DIR__ . '/../modelos/Campista.php';
+require_once RUTA_UTILIDADES . '/funciones.php';
+require_once RUTA_MODELOS . '/Campista.php';
 
 /**
  * Controlador de Campistas

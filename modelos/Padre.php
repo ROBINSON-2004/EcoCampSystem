@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../config/conexion.php';
+require_once RUTA_CONFIG . '/conexion.php';
 
 /**
  * Clase Padre
@@ -172,5 +172,29 @@ class Padre {
         
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+        /**
+     * Obtiene los campistas (hijos) de un padre
+     * Según la BDD real: campistas.id_padre
+     */
+    public function obtenerHijos($id_padre) {
+
+        $sql = "
+            SELECT 
+                id_campista AS id,
+                nombre,
+                apellido
+            FROM campistas
+            WHERE id_padre = :id_padre
+            ORDER BY nombre
+        ";
+
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->bindParam(':id_padre', $id_padre, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
 }
+
 ?>

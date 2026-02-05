@@ -1,8 +1,8 @@
 <?php
 require_once __DIR__ . '/../config/constantes.php';
-require_once __DIR__ . '/../utilidades/sesion.php';
-require_once __DIR__ . '/../utilidades/funciones.php';
-require_once __DIR__ . '/../modelos/Usuario.php';
+require_once RUTA_UTILIDADES . '/sesion.php';
+require_once RUTA_UTILIDADES . '/funciones.php';
+require_once RUTA_MODELOS . '/Usuario.php';
 
 /**
  * Controlador de Autenticación
@@ -133,7 +133,7 @@ class AutenticacionControlador {
         
         if ($id_usuario) {
             // Crear registro en tabla padres
-            require_once __DIR__ . '/../modelos/Padre.php';
+            require_once RUTA_MODELOS . '/Padre.php';
             $padre_modelo = new Padre();
             $padre_modelo->id_usuario = $id_usuario;
             $padre_modelo->direccion = !empty($datos['direccion']) ? limpiar_cadena($datos['direccion']) : null;

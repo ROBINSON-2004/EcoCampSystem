@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/config/constantes.php';
-require_once __DIR__ . '/utilidades/sesion.php';
-require_once __DIR__ . '/utilidades/funciones.php';
+require_once RUTA_UTILIDADES . '/sesion.php';
+require_once RUTA_UTILIDADES . '/funciones.php';
 
 // Iniciar sesión para poder destruirla
 Sesion::iniciar();

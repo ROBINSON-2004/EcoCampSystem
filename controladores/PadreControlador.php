@@ -1,8 +1,9 @@
 <?php
-require_once __DIR__ . '/../config/constantes.php';
-require_once __DIR__ . '/../utilidades/funciones.php';
-require_once __DIR__ . '/../modelos/Usuario.php';
-require_once __DIR__ . '/../modelos/Padre.php';
+require_once RUTA_CONFIG . '/constantes.php';
+
+require_once RUTA_UTILIDADES . '/funciones.php';
+require_once RUTA_MODELOS . '/Usuario.php';
+require_once RUTA_MODELOS . '/Padre.php';
 
 /**
  * Controlador de Padres

@@ -166,3 +166,46 @@
 [2026-01-09 11:11:18] [INFO] Campista 10 asignado al grupo 4
 [2026-01-09 11:11:18] [INFO] Campista 8 asignado al grupo 4
 [2026-01-16 12:57:53] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-02-03 21:07:32] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-02-03 21:43:10] [INFO] Asistencia registrada: Campista 7 - 2026-02-03
+[2026-02-03 21:43:15] [INFO] Asistencia registrada: Campista 10 - 2026-02-03
+[2026-02-03 21:43:18] [INFO] Asistencia registrada: Campista 9 - 2026-02-03
+[2026-02-03 21:43:20] [INFO] Asistencia registrada: Campista 8 - 2026-02-03
+[2026-02-04 09:48:47] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-02-04 10:20:22] [INFO] Padre actualizado: ID 3
+[2026-02-04 10:31:26] [INFO] Asistencia registrada: Campista 7 - 2026-02-04
+[2026-02-04 10:31:27] [INFO] Asistencia registrada: Campista 10 - 2026-02-04
+[2026-02-04 10:31:28] [INFO] Asistencia registrada: Campista 9 - 2026-02-04
+[2026-02-04 10:31:29] [INFO] Asistencia registrada: Campista 8 - 2026-02-04
+[2026-02-04 12:39:49] [WARNING] Intento de inicio de sesión fallido: admin@campamento.com
+[2026-02-04 12:40:14] [WARNING] Intento de inicio de sesión fallido: admin@campamento.com
+[2026-02-04 12:40:33] [WARNING] Intento de inicio de sesión fallido: admin@campamento.com
+[2026-02-04 12:40:44] [WARNING] Intento de inicio de sesión fallido: admin@campamento.com
+[2026-02-04 12:44:02] [WARNING] Intento de inicio de sesión fallido: admin@campamento.com
+[2026-02-04 12:44:14] [WARNING] Intento de inicio de sesión fallido: admin@campamento.com
+[2026-02-04 12:44:26] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-02-04 12:53:59] [INFO] Actividad creada: ID 1
+[2026-02-04 12:55:14] [INFO] Actividad programada: Actividad 1 - Grupo 2
+[2026-02-04 16:11:52] [WARNING] Intento de inicio de sesión fallido: admin@administrador.com
+[2026-02-04 16:12:17] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-02-04 19:25:56] [INFO] Cierre de sesión: admin@campamento.com
+[2026-02-04 19:26:37] [WARNING] Intento de inicio de sesión fallido: jennifer@gamil.com
+[2026-02-04 19:27:00] [WARNING] Intento de inicio de sesión fallido: jennifer.defaz@gmail.com
+[2026-02-04 19:27:33] [WARNING] Intento de inicio de sesión fallido: jennfer@gmail.com
+[2026-02-04 19:27:57] [WARNING] Intento de inicio de sesión fallido: jenniferdefaz@gmail.com
+[2026-02-04 19:28:43] [INFO] Inicio de sesión exitoso: jennifer@gmail.com
+[2026-02-04 19:29:31] [INFO] Inicio de sesión exitoso: kelly@gmail.com
+[2026-02-04 21:24:14] [INFO] Cierre de sesión: kelly@gmail.com
+[2026-02-04 21:24:29] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-02-04 21:26:48] [INFO] Inicio de sesión exitoso: kelly@gmail.com
+[2026-02-04 21:31:54] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-02-04 22:07:25] [INFO] Inicio de sesión exitoso: kelly@gmail.com
+[2026-02-05 01:45:39] [INFO] Cierre de sesión: kelly@gmail.com
+[2026-02-05 01:45:39] [INFO] Cierre de sesión: 
+[2026-02-05 01:45:54] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-02-05 01:52:03] [INFO] Asistencia registrada: Campista 7 - 2026-02-05
+[2026-02-05 01:52:05] [INFO] Asistencia registrada: Campista 10 - 2026-02-05
+[2026-02-05 01:52:07] [INFO] Asistencia registrada: Campista 8 - 2026-02-05
+[2026-02-05 01:52:09] [INFO] Asistencia registrada: Campista 9 - 2026-02-05
+[2026-02-05 02:01:21] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-02-05 02:05:58] [INFO] Padre actualizado: ID 3

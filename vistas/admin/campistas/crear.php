@@ -1,9 +1,9 @@
 <?php
 require_once __DIR__ . '/../../../config/constantes.php';
-require_once __DIR__ . '/../../../utilidades/sesion.php';
-require_once __DIR__ . '/../../../utilidades/funciones.php';
-require_once __DIR__ . '/../../../controladores/CampistaControlador.php';
-require_once __DIR__ . '/../../../controladores/PadreControlador.php';
+require_once RUTA_UTILIDADES . '/sesion.php';
+require_once RUTA_UTILIDADES . '/funciones.php';
+require_once RUTA_CONTROLADORES . '/CampistaControlador.php';
+require_once RUTA_CONTROLADORES . '/PadreControlador.php';
 
 // Requerir autenticación de administrador
 Sesion::requerirTipoUsuario(TIPO_ADMINISTRADOR);
