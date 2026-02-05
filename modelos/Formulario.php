@@ -1,6 +1,6 @@
 <?php
 /**
- * Modelo Formulario
+ * Modelo Formulario - Adaptado para campamento_db
  * Gestiona los formularios que deben ser completados/firmados por los padres
  */
 
@@ -8,17 +8,19 @@ class Formulario {
     private $conn;
     private $tabla = 'formularios';
     
-    // Propiedades
-    public $id;
+    // Propiedades mapeadas a la BD
+    public $id_formulario;
     public $titulo;
     public $descripcion;
+    public $tipo_formulario; // consentimiento, medico, liberacion, otro
     public $archivo_url;
-    public $tipo; // 'consentimiento', 'medico', 'fotografico', 'otro'
-    public $obligatorio; // 1 o 0
-    public $activo; // 1 o 0
-    public $fecha_creacion;
-    public $fecha_limite;
-    public $creado_por; // ID del administrador
+    public $es_obligatorio; // BOOLEAN
+    public $anio_vigencia;
+    public $fecha_subida;
+    public $subido_por; // id_usuario
+    public $estado; // activo, inactivo, archivado
+    public $activo; // BOOLEAN (nuevo campo)
+    public $fecha_limite; // DATE (nuevo campo)
     
     public function __construct($db) {
         $this->conn = $db;
@@ -29,21 +31,26 @@ class Formulario {
      */
     public function obtenerTodos($filtros = []) {
         $query = "SELECT f.*, 
-                         u.nombre as creador_nombre,
+                         CONCAT(u.nombre, ' ', u.apellido) as creador_nombre,
                          (SELECT COUNT(*) FROM formularios_campistas 
-                          WHERE id_formulario = f.id) as total_envios,
+                          WHERE id_formulario = f.id_formulario) as total_envios,
                          (SELECT COUNT(*) FROM formularios_campistas 
-                          WHERE id_formulario = f.id AND firmado = 1) as total_firmados
+                          WHERE id_formulario = f.id_formulario AND estado = 'completado') as total_firmados
                   FROM " . $this->tabla . " f
-                  LEFT JOIN usuarios u ON f.creado_por = u.id
+                  LEFT JOIN usuarios u ON f.subido_por = u.id_usuario
                   WHERE 1=1";
         
         $params = [];
         
         // Filtros opcionales
-        if (!empty($filtros['tipo'])) {
-            $query .= " AND f.tipo = :tipo";
-            $params[':tipo'] = $filtros['tipo'];
+        if (!empty($filtros['tipo_formulario'])) {
+            $query .= " AND f.tipo_formulario = :tipo_formulario";
+            $params[':tipo_formulario'] = $filtros['tipo_formulario'];
+        }
+        
+        if (isset($filtros['estado'])) {
+            $query .= " AND f.estado = :estado";
+            $params[':estado'] = $filtros['estado'];
         }
         
         if (isset($filtros['activo'])) {
@@ -51,12 +58,20 @@ class Formulario {
             $params[':activo'] = $filtros['activo'];
         }
         
-        if (isset($filtros['obligatorio'])) {
-            $query .= " AND f.obligatorio = :obligatorio";
-            $params[':obligatorio'] = $filtros['obligatorio'];
+        if (isset($filtros['es_obligatorio'])) {
+            $query .= " AND f.es_obligatorio = :es_obligatorio";
+            $params[':es_obligatorio'] = $filtros['es_obligatorio'];
         }
         
-        $query .= " ORDER BY f.fecha_creacion DESC";
+        if (isset($filtros['anio_vigencia'])) {
+            $query .= " AND f.anio_vigencia = :anio_vigencia";
+            $params[':anio_vigencia'] = $filtros['anio_vigencia'];
+        } else {
+            // Por defecto mostrar del año actual
+            $query .= " AND f.anio_vigencia = YEAR(CURDATE())";
+        }
+        
+        $query .= " ORDER BY f.fecha_subida DESC";
         
         $stmt = $this->conn->prepare($query);
         $stmt->execute($params);
@@ -69,10 +84,10 @@ class Formulario {
      */
     public function obtenerPorId($id) {
         $query = "SELECT f.*, 
-                         u.nombre as creador_nombre
+                         CONCAT(u.nombre, ' ', u.apellido) as creador_nombre
                   FROM " . $this->tabla . " f
-                  LEFT JOIN usuarios u ON f.creado_por = u.id
-                  WHERE f.id = :id";
+                  LEFT JOIN usuarios u ON f.subido_por = u.id_usuario
+                  WHERE f.id_formulario = :id";
         
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':id', $id);
@@ -88,34 +103,38 @@ class Formulario {
         $query = "INSERT INTO " . $this->tabla . "
                   SET titulo = :titulo,
                       descripcion = :descripcion,
+                      tipo_formulario = :tipo_formulario,
                       archivo_url = :archivo_url,
-                      tipo = :tipo,
-                      obligatorio = :obligatorio,
-                      activo = :activo,
+                      es_obligatorio = :es_obligatorio,
+                      anio_vigencia = :anio_vigencia,
                       fecha_limite = :fecha_limite,
-                      creado_por = :creado_por,
-                      fecha_creacion = NOW()";
+                      subido_por = :subido_por,
+                      estado = :estado,
+                      activo = :activo,
+                      fecha_subida = NOW()";
         
         $stmt = $this->conn->prepare($query);
         
         // Limpiar datos
         $this->titulo = htmlspecialchars(strip_tags($this->titulo));
         $this->descripcion = htmlspecialchars(strip_tags($this->descripcion));
+        $this->tipo_formulario = htmlspecialchars(strip_tags($this->tipo_formulario));
         $this->archivo_url = htmlspecialchars(strip_tags($this->archivo_url));
-        $this->tipo = htmlspecialchars(strip_tags($this->tipo));
         
         // Bind datos
         $stmt->bindParam(':titulo', $this->titulo);
         $stmt->bindParam(':descripcion', $this->descripcion);
+        $stmt->bindParam(':tipo_formulario', $this->tipo_formulario);
         $stmt->bindParam(':archivo_url', $this->archivo_url);
-        $stmt->bindParam(':tipo', $this->tipo);
-        $stmt->bindParam(':obligatorio', $this->obligatorio);
-        $stmt->bindParam(':activo', $this->activo);
+        $stmt->bindParam(':es_obligatorio', $this->es_obligatorio);
+        $stmt->bindParam(':anio_vigencia', $this->anio_vigencia);
         $stmt->bindParam(':fecha_limite', $this->fecha_limite);
-        $stmt->bindParam(':creado_por', $this->creado_por);
+        $stmt->bindParam(':subido_por', $this->subido_por);
+        $stmt->bindParam(':estado', $this->estado);
+        $stmt->bindParam(':activo', $this->activo);
         
         if ($stmt->execute()) {
-            $this->id = $this->conn->lastInsertId();
+            $this->id_formulario = $this->conn->lastInsertId();
             return true;
         }
         
@@ -129,33 +148,35 @@ class Formulario {
         $query = "UPDATE " . $this->tabla . "
                   SET titulo = :titulo,
                       descripcion = :descripcion,
-                      tipo = :tipo,
-                      obligatorio = :obligatorio,
-                      activo = :activo,
-                      fecha_limite = :fecha_limite";
+                      tipo_formulario = :tipo_formulario,
+                      es_obligatorio = :es_obligatorio,
+                      fecha_limite = :fecha_limite,
+                      estado = :estado,
+                      activo = :activo";
         
         // Si hay nuevo archivo
         if (!empty($this->archivo_url)) {
             $query .= ", archivo_url = :archivo_url";
         }
         
-        $query .= " WHERE id = :id";
+        $query .= " WHERE id_formulario = :id";
         
         $stmt = $this->conn->prepare($query);
         
         // Limpiar datos
         $this->titulo = htmlspecialchars(strip_tags($this->titulo));
         $this->descripcion = htmlspecialchars(strip_tags($this->descripcion));
-        $this->tipo = htmlspecialchars(strip_tags($this->tipo));
+        $this->tipo_formulario = htmlspecialchars(strip_tags($this->tipo_formulario));
         
         // Bind datos
         $stmt->bindParam(':titulo', $this->titulo);
         $stmt->bindParam(':descripcion', $this->descripcion);
-        $stmt->bindParam(':tipo', $this->tipo);
-        $stmt->bindParam(':obligatorio', $this->obligatorio);
-        $stmt->bindParam(':activo', $this->activo);
+        $stmt->bindParam(':tipo_formulario', $this->tipo_formulario);
+        $stmt->bindParam(':es_obligatorio', $this->es_obligatorio);
         $stmt->bindParam(':fecha_limite', $this->fecha_limite);
-        $stmt->bindParam(':id', $this->id);
+        $stmt->bindParam(':estado', $this->estado);
+        $stmt->bindParam(':activo', $this->activo);
+        $stmt->bindParam(':id', $this->id_formulario);
         
         if (!empty($this->archivo_url)) {
             $this->archivo_url = htmlspecialchars(strip_tags($this->archivo_url));
@@ -169,21 +190,16 @@ class Formulario {
      * Eliminar formulario
      */
     public function eliminar() {
-        // Primero eliminar las relaciones
-        $query = "DELETE FROM formularios_campistas WHERE id_formulario = :id";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':id', $this->id);
-        $stmt->execute();
-        
+        // Primero eliminar las relaciones (CASCADE lo hace automáticamente)
         // Eliminar archivo físico si existe
-        if (!empty($this->archivo_url) && file_exists($this->archivo_url)) {
-            unlink($this->archivo_url);
+        if (!empty($this->archivo_url) && file_exists(RUTA_RAIZ . '/' . $this->archivo_url)) {
+            unlink(RUTA_RAIZ . '/' . $this->archivo_url);
         }
         
         // Eliminar formulario
-        $query = "DELETE FROM " . $this->tabla . " WHERE id = :id";
+        $query = "DELETE FROM " . $this->tabla . " WHERE id_formulario = :id";
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':id', $this->id);
+        $stmt->bindParam(':id', $this->id_formulario);
         
         return $stmt->execute();
     }
@@ -191,10 +207,10 @@ class Formulario {
     /**
      * Cambiar estado activo/inactivo
      */
-    public function cambiarEstado($id, $estado) {
-        $query = "UPDATE " . $this->tabla . " SET activo = :estado WHERE id = :id";
+    public function cambiarEstado($id, $activo) {
+        $query = "UPDATE " . $this->tabla . " SET activo = :activo WHERE id_formulario = :id";
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':estado', $estado);
+        $stmt->bindParam(':activo', $activo, PDO::PARAM_BOOL);
         $stmt->bindParam(':id', $id);
         
         return $stmt->execute();
@@ -206,8 +222,9 @@ class Formulario {
     public function obtenerEstadisticas($id_formulario) {
         $query = "SELECT 
                     COUNT(DISTINCT fc.id_campista) as total_asignados,
-                    COUNT(CASE WHEN fc.firmado = 1 THEN 1 END) as total_firmados,
-                    COUNT(CASE WHEN fc.firmado = 0 THEN 1 END) as pendientes
+                    COUNT(CASE WHEN fc.estado = 'completado' THEN 1 END) as total_firmados,
+                    COUNT(CASE WHEN fc.estado = 'pendiente' THEN 1 END) as pendientes,
+                    COUNT(CASE WHEN fc.estado = 'rechazado' THEN 1 END) as rechazados
                   FROM formularios_campistas fc
                   WHERE fc.id_formulario = :id_formulario";
         
@@ -219,12 +236,12 @@ class Formulario {
     }
     
     /**
-     * Asignar formulario a campistas
+     * Asignar formulario a campistas específicos
      */
     public function asignarACampistas($id_formulario, $campistas_ids) {
         $query = "INSERT INTO formularios_campistas 
-                  (id_formulario, id_campista, fecha_asignacion)
-                  VALUES (:id_formulario, :id_campista, NOW())
+                  (id_formulario, id_campista, fecha_asignacion, estado)
+                  VALUES (:id_formulario, :id_campista, NOW(), 'pendiente')
                   ON DUPLICATE KEY UPDATE fecha_asignacion = NOW()";
         
         $stmt = $this->conn->prepare($query);
@@ -239,20 +256,47 @@ class Formulario {
     }
     
     /**
-     * Asignar formulario a todos los campistas activos
+     * Asignar formulario a todos los campistas aprobados del año actual
      */
     public function asignarATodos($id_formulario) {
         $query = "INSERT INTO formularios_campistas 
-                  (id_formulario, id_campista, fecha_asignacion)
-                  SELECT :id_formulario, id, NOW()
+                  (id_formulario, id_campista, fecha_asignacion, estado)
+                  SELECT :id_formulario, id_campista, NOW(), 'pendiente'
                   FROM campistas
-                  WHERE activo = 1
+                  WHERE estado_inscripcion = 'aprobado'
+                    AND anio_inscripcion = YEAR(CURDATE())
                   ON DUPLICATE KEY UPDATE fecha_asignacion = NOW()";
         
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':id_formulario', $id_formulario);
         
         return $stmt->execute();
+    }
+    
+    /**
+     * Obtener campistas que tienen formularios pendientes obligatorios
+     */
+    public function obtenerCampistasPendientesObligatorios() {
+        $query = "SELECT DISTINCT
+                    c.id_campista,
+                    c.nombre,
+                    c.apellido,
+                    COUNT(*) as formularios_pendientes
+                  FROM campistas c
+                  INNER JOIN formularios_campistas fc ON c.id_campista = fc.id_campista
+                  INNER JOIN formularios f ON fc.id_formulario = f.id_formulario
+                  WHERE fc.estado = 'pendiente'
+                    AND f.es_obligatorio = TRUE
+                    AND f.estado = 'activo'
+                    AND f.activo = TRUE
+                    AND c.estado_inscripcion = 'aprobado'
+                  GROUP BY c.id_campista
+                  ORDER BY formularios_pendientes DESC";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
 ?>

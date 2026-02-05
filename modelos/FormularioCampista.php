@@ -1,6 +1,6 @@
 <?php
 /**
- * Modelo FormularioCampista
+ * Modelo FormularioCampista - Adaptado para campamento_db
  * Gestiona la relación entre formularios y campistas (asignación, firma, seguimiento)
  */
 
@@ -9,15 +9,16 @@ class FormularioCampista {
     private $tabla = 'formularios_campistas';
     
     // Propiedades
-    public $id;
+    public $id_formulario_campista;
     public $id_formulario;
     public $id_campista;
-    public $firmado;
     public $fecha_firma;
-    public $fecha_asignacion;
-    public $documento_firmado_url;
-    public $ip_firma;
+    public $firmado_por; // id_usuario del padre
+    public $archivo_firmado;
+    public $estado; // pendiente, completado, rechazado
     public $observaciones;
+    public $fecha_asignacion;
+    public $ip_firma;
     
     public function __construct($db) {
         $this->conn = $db;
@@ -31,31 +32,32 @@ class FormularioCampista {
                          f.titulo, 
                          f.descripcion, 
                          f.archivo_url,
-                         f.tipo,
-                         f.obligatorio,
+                         f.tipo_formulario,
+                         f.es_obligatorio,
                          f.fecha_limite,
                          c.nombre as campista_nombre,
-                         c.apellidos as campista_apellidos
+                         c.apellido as campista_apellido
                   FROM " . $this->tabla . " fc
-                  INNER JOIN formularios f ON fc.id_formulario = f.id
-                  INNER JOIN campistas c ON fc.id_campista = c.id
+                  INNER JOIN formularios f ON fc.id_formulario = f.id_formulario
+                  INNER JOIN campistas c ON fc.id_campista = c.id_campista
                   WHERE fc.id_campista = :id_campista
-                  AND f.activo = 1";
+                  AND f.estado = 'activo'
+                  AND f.activo = TRUE";
         
         $params = [':id_campista' => $id_campista];
         
         // Filtros opcionales
-        if (isset($filtros['firmado'])) {
-            $query .= " AND fc.firmado = :firmado";
-            $params[':firmado'] = $filtros['firmado'];
+        if (isset($filtros['estado'])) {
+            $query .= " AND fc.estado = :estado";
+            $params[':estado'] = $filtros['estado'];
         }
         
-        if (!empty($filtros['tipo'])) {
-            $query .= " AND f.tipo = :tipo";
-            $params[':tipo'] = $filtros['tipo'];
+        if (!empty($filtros['tipo_formulario'])) {
+            $query .= " AND f.tipo_formulario = :tipo_formulario";
+            $params[':tipo_formulario'] = $filtros['tipo_formulario'];
         }
         
-        $query .= " ORDER BY f.obligatorio DESC, f.fecha_limite ASC, fc.fecha_asignacion DESC";
+        $query .= " ORDER BY f.es_obligatorio DESC, f.fecha_limite ASC, fc.fecha_asignacion DESC";
         
         $stmt = $this->conn->prepare($query);
         $stmt->execute($params);
@@ -71,25 +73,25 @@ class FormularioCampista {
                          f.titulo, 
                          f.descripcion, 
                          f.archivo_url,
-                         f.tipo,
-                         f.obligatorio,
+                         f.tipo_formulario,
+                         f.es_obligatorio,
                          f.fecha_limite,
                          c.nombre as campista_nombre,
-                         c.apellidos as campista_apellidos,
-                         c.id as campista_id
+                         c.apellido as campista_apellido,
+                         c.id_campista
                   FROM " . $this->tabla . " fc
-                  INNER JOIN formularios f ON fc.id_formulario = f.id
-                  INNER JOIN campistas c ON fc.id_campista = c.id
-                  INNER JOIN padres_campistas pc ON c.id = pc.id_campista
-                  WHERE pc.id_padre = :id_padre
-                  AND f.activo = 1";
+                  INNER JOIN formularios f ON fc.id_formulario = f.id_formulario
+                  INNER JOIN campistas c ON fc.id_campista = c.id_campista
+                  WHERE c.id_padre = :id_padre
+                  AND f.estado = 'activo'
+                  AND f.activo = TRUE";
         
         $params = [':id_padre' => $id_padre];
         
         // Filtros opcionales
-        if (isset($filtros['firmado'])) {
-            $query .= " AND fc.firmado = :firmado";
-            $params[':firmado'] = $filtros['firmado'];
+        if (isset($filtros['estado'])) {
+            $query .= " AND fc.estado = :estado";
+            $params[':estado'] = $filtros['estado'];
         }
         
         if (!empty($filtros['campista_id'])) {
@@ -97,7 +99,7 @@ class FormularioCampista {
             $params[':campista_id'] = $filtros['campista_id'];
         }
         
-        $query .= " ORDER BY fc.firmado ASC, f.obligatorio DESC, f.fecha_limite ASC";
+        $query .= " ORDER BY fc.estado ASC, f.es_obligatorio DESC, f.fecha_limite ASC";
         
         $stmt = $this->conn->prepare($query);
         $stmt->execute($params);
@@ -111,29 +113,30 @@ class FormularioCampista {
     public function obtenerCampistasPorFormulario($id_formulario, $filtros = []) {
         $query = "SELECT fc.*, 
                          c.nombre as campista_nombre,
-                         c.apellidos as campista_apellidos,
+                         c.apellido as campista_apellido,
                          c.fecha_nacimiento,
-                         g.nombre as grupo_nombre,
-                         p.nombre as padre_nombre,
-                         p.apellidos as padre_apellidos,
-                         p.email as padre_email,
-                         p.telefono as padre_telefono
+                         g.nombre_grupo,
+                         u.nombre as padre_nombre,
+                         u.apellido as padre_apellido,
+                         u.correo_electronico as padre_email,
+                         u.telefono as padre_telefono
                   FROM " . $this->tabla . " fc
-                  INNER JOIN campistas c ON fc.id_campista = c.id
-                  LEFT JOIN grupos g ON c.id_grupo = g.id
-                  LEFT JOIN padres_campistas pc ON c.id = pc.id_campista
-                  LEFT JOIN padres p ON pc.id_padre = p.id
+                  INNER JOIN campistas c ON fc.id_campista = c.id_campista
+                  LEFT JOIN campistas_grupos cg ON c.id_campista = cg.id_campista AND cg.estado = 'activo'
+                  LEFT JOIN grupos g ON cg.id_grupo = g.id_grupo
+                  INNER JOIN padres p ON c.id_padre = p.id_padre
+                  INNER JOIN usuarios u ON p.id_usuario = u.id_usuario
                   WHERE fc.id_formulario = :id_formulario";
         
         $params = [':id_formulario' => $id_formulario];
         
         // Filtros opcionales
-        if (isset($filtros['firmado'])) {
-            $query .= " AND fc.firmado = :firmado";
-            $params[':firmado'] = $filtros['firmado'];
+        if (isset($filtros['estado'])) {
+            $query .= " AND fc.estado = :estado";
+            $params[':estado'] = $filtros['estado'];
         }
         
-        $query .= " ORDER BY fc.firmado ASC, c.apellidos ASC, c.nombre ASC";
+        $query .= " ORDER BY fc.estado ASC, c.apellido ASC, c.nombre ASC";
         
         $stmt = $this->conn->prepare($query);
         $stmt->execute($params);
@@ -149,14 +152,14 @@ class FormularioCampista {
                          f.titulo, 
                          f.descripcion, 
                          f.archivo_url,
-                         f.tipo,
-                         f.obligatorio,
+                         f.tipo_formulario,
+                         f.es_obligatorio,
                          f.fecha_limite,
                          c.nombre as campista_nombre,
-                         c.apellidos as campista_apellidos
+                         c.apellido as campista_apellido
                   FROM " . $this->tabla . " fc
-                  INNER JOIN formularios f ON fc.id_formulario = f.id
-                  INNER JOIN campistas c ON fc.id_campista = c.id
+                  INNER JOIN formularios f ON fc.id_formulario = f.id_formulario
+                  INNER JOIN campistas c ON fc.id_campista = c.id_campista
                   WHERE fc.id_formulario = :id_formulario 
                   AND fc.id_campista = :id_campista";
         
@@ -171,18 +174,20 @@ class FormularioCampista {
     /**
      * Firmar formulario
      */
-    public function firmar($id_formulario, $id_campista, $documento_url = null, $ip = null) {
+    public function firmar($id_formulario, $id_campista, $archivo_firmado = null, $ip = null, $firmado_por = null) {
         $query = "UPDATE " . $this->tabla . "
-                  SET firmado = 1,
+                  SET estado = 'completado',
                       fecha_firma = NOW(),
-                      documento_firmado_url = :documento_url,
-                      ip_firma = :ip
+                      archivo_firmado = :archivo_firmado,
+                      ip_firma = :ip,
+                      firmado_por = :firmado_por
                   WHERE id_formulario = :id_formulario 
                   AND id_campista = :id_campista";
         
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':documento_url', $documento_url);
+        $stmt->bindParam(':archivo_firmado', $archivo_firmado);
         $stmt->bindParam(':ip', $ip);
+        $stmt->bindParam(':firmado_por', $firmado_por);
         $stmt->bindParam(':id_formulario', $id_formulario);
         $stmt->bindParam(':id_campista', $id_campista);
         
@@ -195,7 +200,7 @@ class FormularioCampista {
     public function agregarObservaciones($id, $observaciones) {
         $query = "UPDATE " . $this->tabla . "
                   SET observaciones = :observaciones
-                  WHERE id = :id";
+                  WHERE id_formulario_campista = :id";
         
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':observaciones', $observaciones);
@@ -205,16 +210,17 @@ class FormularioCampista {
     }
     
     /**
-     * Verificar si un campista tiene formularios pendientes
+     * Verificar si un campista tiene formularios pendientes obligatorios
      */
-    public function tienePendientes($id_campista) {
+    public function tienePendientesObligatorios($id_campista) {
         $query = "SELECT COUNT(*) as total
                   FROM " . $this->tabla . " fc
-                  INNER JOIN formularios f ON fc.id_formulario = f.id
+                  INNER JOIN formularios f ON fc.id_formulario = f.id_formulario
                   WHERE fc.id_campista = :id_campista 
-                  AND fc.firmado = 0
-                  AND f.activo = 1
-                  AND f.obligatorio = 1";
+                  AND fc.estado = 'pendiente'
+                  AND f.estado = 'activo'
+                  AND f.activo = TRUE
+                  AND f.es_obligatorio = TRUE";
         
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':id_campista', $id_campista);
@@ -231,12 +237,12 @@ class FormularioCampista {
         $query = "SELECT COUNT(*) as total_pendientes,
                          COUNT(DISTINCT fc.id_campista) as campistas_con_pendientes
                   FROM " . $this->tabla . " fc
-                  INNER JOIN formularios f ON fc.id_formulario = f.id
-                  INNER JOIN campistas c ON fc.id_campista = c.id
-                  INNER JOIN padres_campistas pc ON c.id = pc.id_campista
-                  WHERE pc.id_padre = :id_padre 
-                  AND fc.firmado = 0
-                  AND f.activo = 1";
+                  INNER JOIN formularios f ON fc.id_formulario = f.id_formulario
+                  INNER JOIN campistas c ON fc.id_campista = c.id_campista
+                  WHERE c.id_padre = :id_padre 
+                  AND fc.estado = 'pendiente'
+                  AND f.estado = 'activo'
+                  AND f.activo = TRUE";
         
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':id_padre', $id_padre);
@@ -253,22 +259,24 @@ class FormularioCampista {
                          f.titulo, 
                          f.fecha_limite,
                          c.nombre as campista_nombre,
-                         c.apellidos as campista_apellidos,
-                         p.email as padre_email,
-                         p.nombre as padre_nombre
+                         c.apellido as campista_apellido,
+                         u.correo_electronico as padre_email,
+                         u.nombre as padre_nombre,
+                         DATEDIFF(f.fecha_limite, CURRENT_DATE) as dias_restantes
                   FROM " . $this->tabla . " fc
-                  INNER JOIN formularios f ON fc.id_formulario = f.id
-                  INNER JOIN campistas c ON fc.id_campista = c.id
-                  LEFT JOIN padres_campistas pc ON c.id = pc.id_campista
-                  LEFT JOIN padres p ON pc.id_padre = p.id
-                  WHERE fc.firmado = 0
-                  AND f.activo = 1
+                  INNER JOIN formularios f ON fc.id_formulario = f.id_formulario
+                  INNER JOIN campistas c ON fc.id_campista = c.id_campista
+                  INNER JOIN padres p ON c.id_padre = p.id_padre
+                  INNER JOIN usuarios u ON p.id_usuario = u.id_usuario
+                  WHERE fc.estado = 'pendiente'
+                  AND f.estado = 'activo'
+                  AND f.activo = TRUE
                   AND f.fecha_limite IS NOT NULL
-                  AND f.fecha_limite BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL :dias DAY)
+                  AND f.fecha_limite BETWEEN CURRENT_DATE AND DATE_ADD(CURRENT_DATE, INTERVAL :dias DAY)
                   ORDER BY f.fecha_limite ASC";
         
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':dias', $dias);
+        $stmt->bindParam(':dias', $dias, PDO::PARAM_INT);
         $stmt->execute();
         
         return $stmt->fetchAll(PDO::FETCH_ASSOC);

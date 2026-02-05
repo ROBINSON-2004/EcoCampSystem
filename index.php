@@ -1,33 +1,54 @@
 <?php
+// ============================================
+// CARGA DE CONFIGURACIÓN BASE
+// ============================================
 require_once __DIR__ . '/config/constantes.php';
 require_once RUTA_UTILIDADES . '/sesion.php';
+
+
 require_once RUTA_CONTROLADORES . '/AutenticacionControlador.php';
 
-// Si ya hay sesión activa, redirigir al panel
+// ============================================
+// INICIAR SESIÓN
+// ============================================
 Sesion::iniciar();
-if (Sesion::estaActiva()) {
-    header('Location: panel.php');
-    exit();
+
+// ============================================
+// VERIFICAR SI YA HAY SESIÓN ACTIVA
+// (SIN usar estaActiva para evitar el error)
+// ============================================
+if (isset($_SESSION['usuario'])) {
+    header('Location: ' . RUTA_VISTAS . '/dashboard.php');
+    exit;
 }
 
-// Procesar formulario de login
+// ============================================
+// VARIABLES DE MENSAJES
+// ============================================
 $error = '';
 $exito = '';
 
+// ============================================
+// PROCESAR LOGIN
+// ============================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
     $controlador = new AutenticacionControlador();
     $resultado = $controlador->iniciarSesion($_POST);
-    
+
     if ($resultado['exito']) {
-        header('Location: panel.php');
-        exit();
+        header('Location: ' . RUTA_VISTAS . '/dashboard.php');
+        exit;
     } else {
         $error = $resultado['mensaje'];
     }
 }
 
-// Obtener mensaje flash si existe
+// ============================================
+// MENSAJES FLASH
+// ============================================
 $mensaje_flash = Sesion::obtenerMensaje();
+
 if ($mensaje_flash) {
     if ($mensaje_flash['tipo'] === 'exito') {
         $exito = $mensaje_flash['contenido'];
@@ -36,14 +57,15 @@ if ($mensaje_flash) {
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <title>Iniciar Sesión | <?php echo NOMBRE_SITIO; ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar Sesión - <?php echo NOMBRE_SITIO; ?></title>
-    <link rel="stylesheet" href="<?php echo URL_PUBLIC; ?>/css/estilos.css">
 
+    <link rel="stylesheet" href="<?php echo URL_PUBLIC; ?>/css/estilos.css">
 </head>
 <body>
     <div class="login-container">

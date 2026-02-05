@@ -25,8 +25,8 @@ $resultado = $controlador->listar($filtros);
 $formularios = $resultado['success'] ? $resultado['formularios'] : [];
 
 require_once RUTA_VISTAS . '/plantillas/header.php';
-require_once RUTA_VISTAS . '/plantillas/menu-admin.php';
 
+require_once RUTA_VISTAS . '/plantillas/menu-admin.php';
 
 ?>
 
