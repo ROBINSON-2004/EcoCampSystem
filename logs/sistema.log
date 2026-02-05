@@ -214,3 +214,26 @@
 [2026-02-05 14:13:57] [INFO] Cierre de sesión: admin@campamento.com
 [2026-02-05 14:14:25] [INFO] Inicio de sesión exitoso: kelly@gmail.com
 [2026-02-05 14:19:09] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-02-05 14:28:39] [INFO] Actividad creada: ID 3
+[2026-02-05 14:29:26] [INFO] Actividad programada: Actividad 3
+[2026-02-05 14:40:44] [INFO] Campista actualizado: ID 7
+[2026-02-05 14:41:30] [INFO] Campista actualizado: ID 7
+[2026-02-05 14:46:38] [INFO] Cierre de sesión: kelly@gmail.com
+[2026-02-05 14:46:42] [INFO] Inicio de sesión exitoso: kelly@gmail.com
+[2026-02-05 14:47:38] [INFO] Campista actualizado: ID 7
+[2026-02-05 14:52:32] [INFO] Campista eliminado: ID 7
+[2026-02-05 15:05:55] [INFO] Campista retirado: ID 4
+[2026-02-05 15:05:59] [INFO] Campista retirado: ID 3
+[2026-02-05 15:16:57] [INFO] Campista creado ID: 11
+[2026-02-05 15:18:10] [INFO] Campista actualizado ID: 11
+[2026-02-05 15:25:49] [INFO] Nuevo padre registrado: anaperez@gmail.com
+[2026-02-05 15:27:11] [INFO] Campista actualizado ID: 11
+[2026-02-05 15:29:55] [INFO] Inicio de sesión exitoso: anaperez@gmail.com
+[2026-02-05 15:30:58] [INFO] Cierre de sesión: anaperez@gmail.com
+[2026-02-05 15:31:00] [INFO] Inicio de sesión exitoso: kelly@gmail.com
+[2026-02-05 15:33:07] [INFO] Grupo actualizado: ID 4
+[2026-02-05 15:35:02] [INFO] Grupo creado: ID 5
+[2026-02-05 15:35:28] [INFO] Grupo actualizado: ID 5
+[2026-02-05 15:35:33] [INFO] Campista 11 asignado al grupo 5
+[2026-02-05 15:38:29] [actividades] Creada actividad: Cocina
+[2026-02-05 15:39:19] [programacion] Programada actividad ID 4 para grupo 5
