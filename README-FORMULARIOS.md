@@ -9,10 +9,10 @@ El módulo de formularios permite a los administradores del campamento gestionar
 ### Para Administradores
 - ✅ Crear y subir formularios en formato PDF, DOC, DOCX
 - ✅ Asignar formularios a campistas específicos o a todos
-- ✅ Marcar formularios como obligatorios u opcionales
+- ✅ en tiempo real de firmas
+- ✅ Esta Marcar formularios como obligatorios u opcionales
 - ✅ Establecer fechas límite de firma
-- ✅ Ver seguimiento en tiempo real de firmas
-- ✅ Estadísticas y reportes
+- ✅ Ver seguimientodísticas y reportes
 - ✅ Notificaciones automáticas
 
 ### Para Padres
