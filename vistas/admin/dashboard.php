@@ -5,7 +5,7 @@ require_once RUTA_CONFIG . '/conexion.php';
 
 // Verificar que sea administrador
 Sesion::iniciar();
-Sesion::requerirTipoUsuario(TIPO_ADMINISTRADOR);
+Sesion::requerirTipoUsuario(TIPO_ADMIN);
 
 // Obtener datos del usuario logueado
 $datos_usuario = Sesion::obtenerDatosUsuario();

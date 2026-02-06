@@ -237,3 +237,6 @@
 [2026-02-05 15:35:33] [INFO] Campista 11 asignado al grupo 5
 [2026-02-05 15:38:29] [actividades] Creada actividad: Cocina
 [2026-02-05 15:39:19] [programacion] Programada actividad ID 4 para grupo 5
+[2026-02-05 15:57:32] [INFO] Campista eliminado ID: 5
+[2026-02-05 15:58:55] [INFO] Padre actualizado: ID 2
+[2026-02-06 14:18:58] [INFO] Inicio de sesión exitoso: admin@campamento.com
