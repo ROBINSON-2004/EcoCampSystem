@@ -5,7 +5,7 @@ require_once RUTA_UTILIDADES . '/funciones.php';
 require_once RUTA_CONTROLADORES . '/PadreControlador.php';
 
 // Requerir autenticación de administrador
-Sesion::requerirTipoUsuario(TIPO_ADMINISTRADOR);
+Sesion::requerirTipoUsuario(TIPO_ADMIN);
 
 // Obtener datos del usuario
 $datos_usuario = Sesion::obtenerDatosUsuario();

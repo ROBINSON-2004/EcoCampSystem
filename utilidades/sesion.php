@@ -1,257 +1,337 @@
 <?php
 /**
- * Clase Sesion
- * Maneja todas las operaciones relacionadas con sesiones de usuario
+ * Clase Sesion - EcoCampSystem
+ * Centraliza la seguridad, el control de roles y la persistencia de datos.
  */
 class Sesion {
-    
+
     /**
-     * Inicia la sesión si no está iniciada
+     * Inicializa la sesión con el nombre configurado en constantes.php.
+     * Se asegura de establecer el nombre antes de iniciar la sesión para evitar conflictos.
      */
     public static function iniciar() {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_name(NOMBRE_SESION);
-            session_start();
-            
-            // Regenerar ID de sesión periódicamente para seguridad
-            if (!isset($_SESSION['ultima_actividad'])) {
-                $_SESSION['ultima_actividad'] = time();
-            } else {
-                // Regenerar cada 30 minutos
-                if (time() - $_SESSION['ultima_actividad'] > 1800) {
-                    session_regenerate_id(true);
-                    $_SESSION['ultima_actividad'] = time();
-                }
+        if (session_status() == PHP_SESSION_NONE) {
+            // Establecer el nombre de la sesión antes de iniciarla es vital para evitar el bucle
+            if (defined('NOMBRE_SESION')) {
+                session_name(NOMBRE_SESION);
             }
+            session_start();
         }
     }
-    
+
     /**
-     * Establece los datos del usuario en la sesión
-     * @param array $datos_usuario Array con los datos del usuario
+     * MÉTODO POLIMÓRFICO: Guarda datos del usuario o mensajes flash.
+     * - 1 argumento: Guarda el arreglo de datos del usuario.
+     * - 2 argumentos: Guarda un mensaje de retroalimentación (tipo, contenido).
      */
-    public static function establecer($datos_usuario) {
+    public static function establecer($arg1, $arg2 = null) {
         self::iniciar();
         
-        $_SESSION['usuario_id'] = $datos_usuario['id_usuario'];
-        $_SESSION['usuario_nombre'] = $datos_usuario['nombre'];
-        $_SESSION['usuario_apellido'] = $datos_usuario['apellido'];
-        $_SESSION['usuario_correo'] = $datos_usuario['correo_electronico'];
-        $_SESSION['usuario_tipo'] = $datos_usuario['tipo_usuario'];
-        $_SESSION['sesion_iniciada'] = true;
-        $_SESSION['tiempo_inicio'] = time();
-        $_SESSION['ultima_actividad'] = time();
-        
-        // Establecer cookie de recordar sesión si se solicitó
-        if (isset($datos_usuario['recordar']) && $datos_usuario['recordar']) {
-            setcookie(
-                'recordar_sesion',
-                $datos_usuario['id_usuario'],
-                time() + (86400 * 30), // 30 días
-                '/'
-            );
+        if ($arg2 === null) {
+            // Guarda los datos del usuario bajo la llave principal de la sesión
+            $_SESSION[NOMBRE_SESION] = $arg1;
+            
+            // AGREGADO: Normalizar para compatibilidad con módulo de formularios
+            if (isset($arg1['id_usuario'])) {
+                $_SESSION['id_usuario'] = $arg1['id_usuario'];
+                $_SESSION['usuario_id'] = $arg1['id_usuario']; // Alias
+            }
+            if (isset($arg1['tipo_usuario'])) {
+                $_SESSION['tipo_usuario'] = $arg1['tipo_usuario'];
+            }
+            if (isset($arg1['nombre'])) {
+                $_SESSION['nombre'] = $arg1['nombre'];
+            }
+            if (isset($arg1['apellido'])) {
+                $_SESSION['apellido'] = $arg1['apellido'];
+            }
+            if (isset($arg1['correo_electronico'])) {
+                $_SESSION['correo_electronico'] = $arg1['correo_electronico'];
+            }
+        } else {
+            // Llama al método interno para mensajes flash
+            self::establecerMensaje($arg1, $arg2);
         }
     }
-    
+
     /**
-     * Verifica si hay una sesión activa
-     * @return bool
+     * Verifica si el usuario ha iniciado sesión comprobando la existencia de la llave principal.
+     */
+    public static function estaAutenticado() {
+        self::iniciar();
+        return isset($_SESSION[NOMBRE_SESION]) && !empty($_SESSION[NOMBRE_SESION]);
+    }
+
+    /**
+     * ALIAS: Mantiene compatibilidad con la lógica de index.php.
      */
     public static function estaActiva() {
-        self::iniciar();
-        
-        // Verificar si la sesión está iniciada
-        if (!isset($_SESSION['sesion_iniciada']) || $_SESSION['sesion_iniciada'] !== true) {
-            return false;
-        }
-        
-        // Verificar tiempo de inactividad
-        if (isset($_SESSION['ultima_actividad'])) {
-            $tiempo_inactivo = time() - $_SESSION['ultima_actividad'];
-            
-            if ($tiempo_inactivo > TIEMPO_SESION) {
-                self::destruir();
-                return false;
-            }
-        }
-        
-        // Actualizar última actividad
-        $_SESSION['ultima_actividad'] = time();
-        
-        return true;
+        return self::estaAutenticado();
     }
-    
+
     /**
-     * Obtiene el ID del usuario actual
-     * @return int|null
-     */
-    public static function obtenerUsuarioId() {
-        self::iniciar();
-        return isset($_SESSION['usuario_id']) ? $_SESSION['usuario_id'] : null;
-    }
-    
-    /**
-     * Obtiene el tipo de usuario actual
-     * @return string|null
-     */
-    public static function obtenerTipoUsuario() {
-        self::iniciar();
-        return isset($_SESSION['usuario_tipo']) ? $_SESSION['usuario_tipo'] : null;
-    }
-    
-    /**
-     * Obtiene el nombre completo del usuario
-     * @return string
-     */
-    public static function obtenerNombreCompleto() {
-        self::iniciar();
-        if (isset($_SESSION['usuario_nombre']) && isset($_SESSION['usuario_apellido'])) {
-            return $_SESSION['usuario_nombre'] . ' ' . $_SESSION['usuario_apellido'];
-        }
-        return 'Usuario';
-    }
-    
-    /**
-     * Obtiene todos los datos del usuario en sesión
-     * @return array
-     */
-    public static function obtenerDatosUsuario() {
-        self::iniciar();
-        return [
-            'id' => $_SESSION['usuario_id'] ?? null,
-            'nombre' => $_SESSION['usuario_nombre'] ?? '',
-            'apellido' => $_SESSION['usuario_apellido'] ?? '',
-            'correo' => $_SESSION['usuario_correo'] ?? '',
-            'tipo' => $_SESSION['usuario_tipo'] ?? ''
-        ];
-    }
-    
-    /**
-     * Verifica si el usuario tiene un tipo específico
-     * @param string $tipo Tipo de usuario a verificar
-     * @return bool
-     */
-    public static function esTipoUsuario($tipo) {
-        return self::obtenerTipoUsuario() === $tipo;
-    }
-    
-    /**
-     * Verifica si el usuario es administrador
-     * @return bool
-     */
-    public static function esAdministrador() {
-        return self::esTipoUsuario(TIPO_ADMINISTRADOR);
-    }
-    
-    /**
-     * Verifica si el usuario es padre
-     * @return bool
-     */
-    public static function esPadre() {
-        return self::esTipoUsuario(TIPO_PADRE);
-    }
-    
-    /**
-     * Verifica si el usuario es trabajador
-     * @return bool
-     */
-    public static function esTrabajador() {
-        return self::esTipoUsuario(TIPO_TRABAJADOR);
-    }
-    
-    /**
-     * Verifica si el usuario es consejero
-     * @return bool
-     */
-    public static function esConsejero() {
-        return self::esTipoUsuario(TIPO_CONSEJERO);
-    }
-    
-    /**
-     * Establece un mensaje flash en la sesión
-     * @param string $tipo Tipo de mensaje (exito, error, advertencia, info)
-     * @param string $mensaje Contenido del mensaje
-     */
-    public static function establecerMensaje($tipo, $mensaje) {
-        self::iniciar();
-        $_SESSION['mensaje_flash'] = [
-            'tipo' => $tipo,
-            'contenido' => $mensaje
-        ];
-    }
-    
-    /**
-     * Obtiene y elimina el mensaje flash
-     * @return array|null
-     */
-    public static function obtenerMensaje() {
-        self::iniciar();
-        if (isset($_SESSION['mensaje_flash'])) {
-            $mensaje = $_SESSION['mensaje_flash'];
-            unset($_SESSION['mensaje_flash']);
-            return $mensaje;
-        }
-        return null;
-    }
-    
-    /**
-     * Destruye la sesión completamente
-     */
-    public static function destruir() {
-        self::iniciar();
-        
-        // Eliminar cookie de recordar sesión
-        if (isset($_COOKIE['recordar_sesion'])) {
-            setcookie('recordar_sesion', '', time() - 3600, '/');
-        }
-        
-        // Limpiar variables de sesión
-        $_SESSION = array();
-        
-        // Destruir la cookie de sesión
-        if (isset($_COOKIE[session_name()])) {
-            setcookie(session_name(), '', time() - 3600, '/');
-        }
-        
-        // Destruir la sesión
-        session_destroy();
-    }
-    
-    /**
-     * Requiere que el usuario esté autenticado
-     * Redirige al login si no lo está
+     * Protege una página. Redirige al login si no detecta una sesión válida.
      */
     public static function requerirAutenticacion() {
-        if (!self::estaActiva()) {
+        if (!self::estaAutenticado()) {
             header('Location: ' . URL_BASE . '/index.php');
             exit();
         }
     }
-    
+
     /**
-     * Requiere un tipo de usuario específico
-     * @param string|array $tipos_permitidos Tipo(s) de usuario permitido(s)
+     * Retorna el arreglo completo de datos del usuario logueado.
      */
-    public static function requerirTipoUsuario($tipos_permitidos) {
+    public static function obtenerDatosUsuario() {
+        self::iniciar();
+        return $_SESSION[NOMBRE_SESION] ?? null;
+    }
+
+    /**
+     * Verifica el rol del usuario. 
+     * Corregido para usar 'tipo_usuario' en lugar de 'tipo'.
+     */
+    public static function requerirTipoUsuario($tipo_esperado) {
         self::requerirAutenticacion();
+        $datos = self::obtenerDatosUsuario();
         
-        if (!is_array($tipos_permitidos)) {
-            $tipos_permitidos = [$tipos_permitidos];
-        }
+        // Validación de la llave correcta según tu estructura de base de datos
+        $rol_actual = $datos['tipo_usuario'] ?? '';
         
-        if (!in_array(self::obtenerTipoUsuario(), $tipos_permitidos)) {
-            self::establecerMensaje('error', MSG_ERROR_PERMISOS);
-            header('Location: ' . URL_BASE . '/panel.php');
+        if ($rol_actual !== $tipo_esperado) {
+            self::establecer('error', MSG_ERROR_PERMISOS);
+            header('Location: ' . URL_BASE . '/index.php');
             exit();
         }
     }
+
+    /**
+     * Guarda un mensaje temporal (flash) que se borrará tras ser leído.
+     */
+    public static function establecerMensaje($tipo, $contenido) {
+        self::iniciar();
+        $_SESSION['mensaje'] = [
+            'tipo' => $tipo, 
+            'contenido' => $contenido
+        ];
+        
+        // AGREGADO: También guardar en formato compatible con módulo de formularios
+        $_SESSION['tipo_mensaje'] = $tipo;
+        $_SESSION['mensaje_texto'] = $contenido;
+    }
+
+    /**
+     * Recupera el mensaje flash y lo elimina de la sesión.
+     */
+    public static function obtenerMensaje() {
+        self::iniciar();
+        if (isset($_SESSION['mensaje'])) {
+            $mensaje = $_SESSION['mensaje'];
+            unset($_SESSION['mensaje']);
+            // Limpiar también las variables compatibles
+            unset($_SESSION['tipo_mensaje']);
+            unset($_SESSION['mensaje_texto']);
+            return $mensaje;
+        }
+        return null;
+    }
+
+    /**
+     * Limpia todos los datos y destruye la sesión y su cookie.
+     */
+    public static function cerrar() {
+        self::iniciar();
+        $_SESSION = array();
+        
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000,
+                $params["path"], $params["domain"],
+                $params["secure"], $params["httponly"]
+            );
+        }
+        
+        session_destroy();
+    }
+    
+    // ========================================
+    // MÉTODOS ADICIONALES PARA COMPATIBILIDAD
+    // ========================================
     
     /**
-     * Registra la última actividad del usuario
+     * Obtener ID del usuario actual
+     * NUEVO: Para compatibilidad con módulo de formularios
      */
-    public static function registrarActividad() {
+    public static function obtenerIdUsuario() {
         self::iniciar();
-        $_SESSION['ultima_actividad'] = time();
+        $datos = self::obtenerDatosUsuario();
+        return $datos['id_usuario'] ?? ($_SESSION['id_usuario'] ?? null);
     }
+    
+    /**
+     * Obtener tipo de usuario actual
+     * NUEVO: Para compatibilidad con módulo de formularios
+     */
+    public static function obtenerTipoUsuario() {
+        self::iniciar();
+        $datos = self::obtenerDatosUsuario();
+        return $datos['tipo_usuario'] ?? ($_SESSION['tipo_usuario'] ?? null);
+    }
+    
+    /**
+     * Verificar si es administrador
+     * NUEVO: Para compatibilidad
+     */
+    public static function esAdministrador() {
+        return self::obtenerTipoUsuario() === TIPO_ADMINISTRADOR;
+    }
+    
+    /**
+     * Verificar si es padre
+     * NUEVO: Para compatibilidad
+     */
+    public static function esPadre() {
+        return self::obtenerTipoUsuario() === TIPO_PADRE;
+    }
+    
+    /**
+     * Verificar si es trabajador
+     * NUEVO: Para compatibilidad
+     */
+    public static function esTrabajador() {
+        return self::obtenerTipoUsuario() === TIPO_TRABAJADOR;
+    }
+    
+    /**
+     * Verificar si es consejero
+     * NUEVO: Para compatibilidad
+     */
+    public static function esConsejero() {
+        return self::obtenerTipoUsuario() === TIPO_CONSEJERO;
+    }
+}
+
+// ============================================
+// FUNCIONES DE COMPATIBILIDAD PARA FORMULARIOS
+// ============================================
+
+/**
+ * Verificar que hay una sesión activa
+ * Función wrapper para compatibilidad con módulo de formularios
+ */
+function verificarSesion() {
+    Sesion::requerirAutenticacion();
+    
+    // Normalizar variables de sesión para compatibilidad
+    Sesion::iniciar();
+    $datos = Sesion::obtenerDatosUsuario();
+    if ($datos) {
+        if (isset($datos['id_usuario']) && !isset($_SESSION['usuario_id'])) {
+            $_SESSION['usuario_id'] = $datos['id_usuario'];
+        }
+        if (isset($datos['tipo_usuario']) && !isset($_SESSION['tipo_usuario'])) {
+            $_SESSION['tipo_usuario'] = $datos['tipo_usuario'];
+        }
+    }
+}
+
+/**
+ * Verificar que el usuario tiene el permiso requerido
+ * Función wrapper para compatibilidad con módulo de formularios
+ * 
+ * @param string $tipo_requerido Tipo de usuario requerido
+ */
+function verificarPermiso($tipo_requerido) {
+    Sesion::requerirTipoUsuario($tipo_requerido);
+}
+
+/**
+ * Obtener ID del usuario actual
+ * @return int|null
+ */
+function obtenerIdUsuarioActual() {
+    return Sesion::obtenerIdUsuario();
+}
+
+/**
+ * Obtener tipo de usuario actual
+ * @return string|null
+ */
+function obtenerTipoUsuarioActual() {
+    return Sesion::obtenerTipoUsuario();
+}
+
+/**
+ * Verificar si el usuario está autenticado
+ * @return bool
+ */
+function estaAutenticado() {
+    return Sesion::estaAutenticado();
+}
+
+/**
+ * Verificar si el usuario es administrador
+ * @return bool
+ */
+function esAdministrador() {
+    return Sesion::esAdministrador();
+}
+
+/**
+ * Verificar si el usuario es padre
+ * @return bool
+ */
+function esPadre() {
+    return Sesion::esPadre();
+}
+
+/**
+ * Verificar si el usuario es trabajador
+ * @return bool
+ */
+function esTrabajador() {
+    return Sesion::esTrabajador();
+}
+
+/**
+ * Verificar si el usuario es consejero
+ * @return bool
+ */
+function esConsejero() {
+    return Sesion::esConsejero();
+}
+
+/**
+ * Obtener datos completos del usuario actual
+ * @return array|null
+ */
+function obtenerDatosUsuario() {
+    return Sesion::obtenerDatosUsuario();
+}
+
+/**
+ * Establecer mensaje de sesión
+ * @param string $tipo Tipo de mensaje (success, error, warning, info)
+ * @param string $mensaje Texto del mensaje
+ */
+function establecerMensaje($tipo, $mensaje) {
+    Sesion::establecerMensaje($tipo, $mensaje);
+}
+
+/**
+ * Obtener y limpiar mensaje de sesión
+ * @return array|null ['tipo' => string, 'contenido' => string]
+ */
+function obtenerMensaje() {
+    return Sesion::obtenerMensaje();
+}
+
+/**
+ * Cerrar sesión del usuario
+ */
+function cerrarSesion() {
+    Sesion::cerrar();
+    header('Location: ' . URL_BASE . '/index.php');
+    exit();
 }
 ?>

@@ -4,7 +4,7 @@ require_once RUTA_UTILIDADES . '/sesion.php';
 require_once RUTA_UTILIDADES . '/funciones.php';
 require_once RUTA_CONTROLADORES . '/GrupoControlador.php';
 
-Sesion::requerirTipoUsuario(TIPO_ADMINISTRADOR);
+Sesion::requerirTipoUsuario(TIPO_ADMIN);
 
 $controlador = new GrupoControlador();
 $mensaje = Sesion::obtenerMensaje();

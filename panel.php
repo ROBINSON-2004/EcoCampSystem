@@ -1,45 +1,52 @@
 <?php
+// 1. Carga de configuración y utilidades fundamentales
 require_once __DIR__ . '/config/constantes.php';
-require_once RUTA_CONFIG . '/conexion.php';
-require_once RUTA_UTILIDADES . '/funciones.php';
 require_once RUTA_UTILIDADES . '/sesion.php';
+require_once RUTA_UTILIDADES . '/funciones.php';
 
-// Requerir autenticación
-Sesion::requerirAutenticacion();
+Sesion::iniciar();
 
-// Obtener datos del usuario desde sesión
-$datos_usuario = Sesion::obtenerDatosUsuario();
-
-// Validación defensiva
-if (!$datos_usuario || !isset($datos_usuario['tipo'])) {
-    Sesion::cerrar();
+/**
+ * 2. Validación de Autenticación
+ */
+if (!Sesion::estaAutenticado()) {
     header('Location: index.php');
     exit();
 }
 
-$tipo_usuario = $datos_usuario['tipo'];
+$datos_usuario = Sesion::obtenerDatosUsuario();
 
-// Redirigir según tipo
+// CORRECCIÓN AQUÍ: Usamos 'tipo_usuario' que es como viene en tu Array
+$tipo_usuario = $datos_usuario['tipo_usuario'] ?? '';
+
+/**
+ * 3. Enrutador de Dashboards
+ */
 switch ($tipo_usuario) {
 
-    case TIPO_ADMINISTRADOR:
-        require RUTA_VISTAS . '/admin/dashboard.php';
+    case TIPO_ADMIN:
+        require_once RUTA_VISTAS . '/admin/dashboard.php';
         break;
 
     case TIPO_PADRE:
-        require RUTA_VISTAS . '/padre/dashboard.php';
+        require_once RUTA_VISTAS . '/padre/dashboard.php';
         break;
 
     case TIPO_TRABAJADOR:
-        require RUTA_VISTAS . '/trabajador/dashboard.php';
+        require_once RUTA_VISTAS . '/trabajador/dashboard.php';
         break;
 
     case TIPO_CONSEJERO:
-        require RUTA_VISTAS . '/consejero/dashboard.php';
+        require_once RUTA_VISTAS . '/consejero/dashboard.php';
         break;
 
     default:
-        Sesion::establecerMensaje('error', 'Tipo de usuario no válido.');
-        header('Location: ' . URL_BASE . '/index.php');
+        /**
+         * 4. Manejo de errores de Rol
+         */
+        echo "<h2>Error de Configuración de Acceso</h2>";
+        echo "El tipo de usuario detectado es: <strong>'$tipo_usuario'</strong>.<br>";
+        echo "Este rol no tiene un panel de control asignado en el sistema.<br>";
+        echo "Verifica que en <code>config/constantes.php</code> la constante TIPO_ADMIN sea igual a 'administrador'.";
         exit();
 }

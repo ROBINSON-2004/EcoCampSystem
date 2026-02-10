@@ -240,3 +240,12 @@
 [2026-02-05 15:57:32] [INFO] Campista eliminado ID: 5
 [2026-02-05 15:58:55] [INFO] Padre actualizado: ID 2
 [2026-02-06 14:18:58] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-02-06 14:50:45] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-02-06 15:25:32] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-02-06 15:41:42] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-02-06 15:49:14] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-02-06 16:05:51] [WARNING] Intento de inicio de sesión fallido: admin@campamento.com
+[2026-02-06 16:05:56] [WARNING] Intento de inicio de sesión fallido: kelly@gmail.com
+[2026-02-06 16:05:58] [INFO] Inicio de sesión exitoso: kelly@gmail.com
+[2026-02-06 16:28:52] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-02-10 18:14:02] [INFO] Inicio de sesión exitoso: admin@campamento.com

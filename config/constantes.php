@@ -33,11 +33,13 @@ define('REGISTROS_POR_PAGINA', 20);
 
 /* --- 3. ROLES DE USUARIO --- */
 // Armonizados para la lógica de Sesion::requerirTipoUsuario
-define('TIPO_ADMIN', 'admin'); 
+//define('TIPO_ADMIN', 'admin'); 
+define('TIPO_ADMIN', 'administrador'); 
 define('TIPO_PADRE', 'padre');
-define('TIPO_MONITOR', 'monitor');
+////////////////define('TIPO_MONITOR', 'monitor');
 define('TIPO_TRABAJADOR', 'trabajador');
 define('TIPO_CONSEJERO', 'consejero');
+
 
 
 /* --- 4. ESTADOS DEL NEGOCIO --- */
