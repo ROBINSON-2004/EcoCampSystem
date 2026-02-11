@@ -273,3 +273,6 @@
 [2026-02-10 18:57:20] [INFO] Cierre de sesión: admin@campamento.com
 [2026-02-10 19:00:45] [INFO] Inicio de sesión exitoso: kelly@gmail.com
 [2026-02-10 19:01:03] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-02-10 19:21:53] [INFO] Grupo actualizado: ID 5
+[2026-02-10 19:22:37] [INFO] Campista actualizado: ID 11
+[2026-02-10 19:23:02] [INFO] Estado de campista cambiado: ID 11 a pendiente
