@@ -1,5 +1,7 @@
 <?php
 // Verificar que sea administrador
+require_once __DIR__ . '/../../config/constantes.php';
+require_once RUTA_UTILIDADES . '/sesion.php';
 Sesion::requerirTipoUsuario(TIPO_ADMINISTRADOR);
 
 // Obtener datos del usuario

@@ -113,14 +113,6 @@ define('INSCRIPCION_RECHAZADO', 'rechazado');
 define('INSCRIPCION_RETIRADO', 'retirado');
 
 /* ============================================
-define('INSCRIPCION_PENDIENTE', 'pendiente');
-define('INSCRIPCION_APROBADO', 'aprobado');
-define('INSCRIPCION_RECHAZADO', 'rechazado');
-define('INSCRIPCION_RETIRADO', 'retirado'); * ESTADOS DE INSCRIPCIÓN
- * ============================================ */
-
-
-/* ============================================
  * ESTADOS DE ASISTENCIA
  * ============================================ */
 define('ASISTENCIA_PRESENTE', 'presente');

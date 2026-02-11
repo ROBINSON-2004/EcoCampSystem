@@ -4,23 +4,12 @@
 // ============================================
 require_once __DIR__ . '/config/constantes.php';
 require_once RUTA_UTILIDADES . '/sesion.php';
-
-
 require_once RUTA_CONTROLADORES . '/AutenticacionControlador.php';
 
 // ============================================
-// INICIAR SESIÓN
+// INICIAR MOTOR DE SESIONES
 // ============================================
 Sesion::iniciar();
-
-// ============================================
-// VERIFICAR SI YA HAY SESIÓN ACTIVA
-// (SIN usar estaActiva para evitar el error)
-// ============================================
-if (isset($_SESSION['usuario'])) {
-    header('Location: ' . RUTA_VISTAS . '/dashboard.php');
-    exit;
-}
 
 // ============================================
 // VARIABLES DE MENSAJES
@@ -28,16 +17,43 @@ if (isset($_SESSION['usuario'])) {
 $error = '';
 $exito = '';
 
+/**
+ * Función auxiliar para obtener la URL de redirección según el rol
+ * Mapea el tipo de usuario a la carpeta física correspondiente en vistas/
+ */
+function obtenerUrlDashboard($tipo_usuario) {
+    /**
+     * Según tu estructura, el tipo 'administrador' (TIPO_ADMINISTRADOR) 
+     * corresponde a la carpeta 'admin'.
+     */
+    $carpeta = ($tipo_usuario === TIPO_ADMINISTRADOR) ? 'admin' : $tipo_usuario;
+    return URL_BASE . "/vistas/{$carpeta}/dashboard.php";
+}
+
 // ============================================
-// PROCESAR LOGIN
+// VERIFICAR SI YA HAY SESIÓN ACTIVA
+// Si el usuario ya está logueado, lo enviamos a su dashboard
+// ============================================
+if (isset($_SESSION['usuario'])) {
+    $url = obtenerUrlDashboard($_SESSION['usuario']['tipo_usuario']);
+    header('Location: ' . $url);
+    exit;
+}
+
+// ============================================
+// PROCESAR INICIO DE SESIÓN (POST)
 // ============================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
     $controlador = new AutenticacionControlador();
     $resultado = $controlador->iniciarSesion($_POST);
 
     if ($resultado['exito']) {
-        header('Location: ' . RUTA_VISTAS . '/dashboard.php');
+        /**
+         * Redirigir usando la URL generada por el controlador 
+         * o la función auxiliar basada en URL_BASE.
+         */
+        $url_destino = isset($resultado['url_redireccion']) ? $resultado['url_redireccion'] : obtenerUrlDashboard($resultado['tipo_usuario']);
+        header('Location: ' . $url_destino);
         exit;
     } else {
         $error = $resultado['mensaje'];
@@ -45,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // ============================================
-// MENSAJES FLASH
+// GESTIÓN DE MENSAJES FLASH
 // ============================================
 $mensaje_flash = Sesion::obtenerMensaje();
 
@@ -64,20 +80,20 @@ if ($mensaje_flash) {
     <meta charset="UTF-8">
     <title>Iniciar Sesión | <?php echo NOMBRE_SITIO; ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    
     <link rel="stylesheet" href="<?php echo URL_PUBLIC; ?>/css/estilos.css">
 </head>
 <body>
     <div class="login-container">
         <div class="login-left">
             <h1>🏕️ Bienvenido</h1>
-            <p>Sistema de Gestión de Campamento - Administra campistas, actividades, asistencia y más de forma fácil y eficiente.</p>
+            <p><?php echo NOMBRE_SITIO; ?> - Gestiona campistas, actividades y reportes de forma centralizada y eficiente.</p>
         </div>
         
         <div class="login-right">
             <div class="login-header">
                 <h2>Iniciar Sesión</h2>
-                <p>Ingresa tus credenciales para continuar</p>
+                <p>Ingresa tus credenciales para acceder al sistema</p>
             </div>
             
             <?php if ($error): ?>
@@ -91,7 +107,7 @@ if ($mensaje_flash) {
             <form method="POST" action="">
                 <div class="form-group">
                     <label for="correo">Correo Electrónico</label>
-                    <input type="email" id="correo" name="correo" required placeholder="tu@email.com">
+                    <input type="email" id="correo" name="correo" required placeholder="ejemplo@ecocamp.com">
                 </div>
                 
                 <div class="form-group">

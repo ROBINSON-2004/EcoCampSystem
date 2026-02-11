@@ -1,22 +1,24 @@
 <?php
+/**
+ * ============================================
+ * CONTROLADOR DE AUTENTICACIÓN - EcoCampSystem
+ * ============================================
+ */
+
 require_once __DIR__ . '/../config/constantes.php';
 require_once RUTA_UTILIDADES . '/sesion.php';
 require_once RUTA_UTILIDADES . '/funciones.php';
 require_once RUTA_MODELOS . '/Usuario.php';
 
-/**
- * Controlador de Autenticación
- * Maneja login, registro y cierre de sesión
- */
 class AutenticacionControlador {
     
     /**
      * Procesa el inicio de sesión
-     * @param array $datos Datos del formulario
-     * @return array Respuesta con éxito y mensaje
+     * @param array $datos Datos del formulario ($_POST)
+     * @return array Respuesta con éxito, mensaje y URL de redirección
      */
     public function iniciarSesion($datos) {
-        // Validar datos
+        // 1. Validar campos obligatorios
         if (empty($datos['correo']) || empty($datos['contrasena'])) {
             return [
                 'exito' => false,
@@ -24,7 +26,7 @@ class AutenticacionControlador {
             ];
         }
         
-        // Validar formato de correo
+        // 2. Validar formato de correo electrónico
         if (!validar_correo($datos['correo'])) {
             return [
                 'exito' => false,
@@ -32,22 +34,33 @@ class AutenticacionControlador {
             ];
         }
         
-        // Intentar autenticar
+        // 3. Intentar autenticar con el modelo Usuario
         $usuario_modelo = new Usuario();
         $usuario = $usuario_modelo->autenticar($datos['correo'], $datos['contrasena']);
         
         if ($usuario) {
-            // Establecer sesión
+            // Establecer datos de sesión
             $usuario['recordar'] = isset($datos['recordar']) ? true : false;
             Sesion::establecer($usuario);
             
             // Registrar en log
             registrar_log("Inicio de sesión exitoso: {$datos['correo']}", 'INFO');
             
+            /**
+             * LÓGICA DE REDIRECCIÓN:
+             * Mapeamos el tipo de usuario a su respectiva carpeta en /vistas/
+             * Si es 'administrador', la carpeta es 'admin'.
+             */
+            $tipo = $usuario['tipo_usuario'];
+            $carpeta = ($tipo === TIPO_ADMINISTRADOR) ? 'admin' : $tipo;
+            
+            $url_destino = URL_BASE . "/vistas/{$carpeta}/dashboard.php";
+            
             return [
                 'exito' => true,
                 'mensaje' => 'Inicio de sesión exitoso.',
-                'tipo_usuario' => $usuario['tipo_usuario']
+                'tipo_usuario' => $tipo,
+                'url_redireccion' => $url_destino
             ];
         } else {
             // Registrar intento fallido
@@ -78,36 +91,11 @@ class AutenticacionControlador {
             }
         }
         
-        // Validar correo
-        if (!validar_correo($datos['correo'])) {
-            return [
-                'exito' => false,
-                'mensaje' => 'El correo electrónico no es válido.'
-            ];
-        }
-        
-        // Validar teléfono
-        if (!validar_telefono($datos['telefono'])) {
-            return [
-                'exito' => false,
-                'mensaje' => 'El número de teléfono no es válido.'
-            ];
-        }
-        
         // Validar que las contraseñas coincidan
         if ($datos['contrasena'] !== $datos['confirmar_contrasena']) {
             return [
                 'exito' => false,
                 'mensaje' => 'Las contraseñas no coinciden.'
-            ];
-        }
-        
-        // Validar fortaleza de contraseña
-        $validacion_contrasena = validar_fortaleza_contrasena($datos['contrasena']);
-        if (!$validacion_contrasena['valida']) {
-            return [
-                'exito' => false,
-                'mensaje' => implode(' ', $validacion_contrasena['errores'])
             ];
         }
         
@@ -120,7 +108,7 @@ class AutenticacionControlador {
             ];
         }
         
-        // Crear usuario
+        // Configurar y crear el Usuario
         $usuario_modelo->nombre = limpiar_cadena($datos['nombre']);
         $usuario_modelo->apellido = limpiar_cadena($datos['apellido']);
         $usuario_modelo->correo_electronico = limpiar_cadena($datos['correo']);
@@ -132,17 +120,14 @@ class AutenticacionControlador {
         $id_usuario = $usuario_modelo->crear();
         
         if ($id_usuario) {
-            // Crear registro en tabla padres
+            // Crear el registro complementario en la tabla Padres
             require_once RUTA_MODELOS . '/Padre.php';
             $padre_modelo = new Padre();
             $padre_modelo->id_usuario = $id_usuario;
             $padre_modelo->direccion = !empty($datos['direccion']) ? limpiar_cadena($datos['direccion']) : null;
-            $padre_modelo->ciudad = !empty($datos['ciudad']) ? limpiar_cadena($datos['ciudad']) : null;
-            $padre_modelo->codigo_postal = !empty($datos['codigo_postal']) ? limpiar_cadena($datos['codigo_postal']) : null;
             
             if ($padre_modelo->crear()) {
                 registrar_log("Nuevo padre registrado: {$datos['correo']}", 'INFO');
-                
                 return [
                     'exito' => true,
                     'mensaje' => 'Registro exitoso. Ya puedes iniciar sesión.'
@@ -160,23 +145,14 @@ class AutenticacionControlador {
      * Cierra la sesión del usuario
      */
     public function cerrarSesion() {
-        $correo = Sesion::obtenerDatosUsuario()['correo'];
-        Sesion::destruir();
+        $usuario_data = Sesion::obtenerDatosUsuario();
+        $correo = $usuario_data['correo'] ?? 'Desconocido';
         
+        Sesion::destruir();
         registrar_log("Cierre de sesión: $correo", 'INFO');
         
-        redirigir(URL_BASE . '/index.php');
-    }
-    
-    /**
-     * Valida el token de recuperación de contraseña
-     * @param string $token Token a validar
-     * @return array|bool Datos del usuario o false
-     */
-    public function validarTokenRecuperacion($token) {
-        // Implementar lógica de tokens (requiere tabla adicional)
-        // Por ahora retorna false
-        return false;
+        header('Location: ' . URL_BASE . '/index.php');
+        exit;
     }
     
     /**
@@ -186,31 +162,17 @@ class AutenticacionControlador {
      */
     public function recuperarContrasena($correo) {
         if (!validar_correo($correo)) {
-            return [
-                'exito' => false,
-                'mensaje' => 'El correo electrónico no es válido.'
-            ];
+            return ['exito' => false, 'mensaje' => 'El correo electrónico no es válido.'];
         }
         
         $usuario_modelo = new Usuario();
         $usuario_modelo->correo_electronico = $correo;
         
         if ($usuario_modelo->leerPorCorreo()) {
-            // Generar token
-            $token = generar_token(32);
-            
-            // TODO: Guardar token en BD con expiración
-            // TODO: Enviar correo con enlace de recuperación
-            
             registrar_log("Solicitud de recuperación de contraseña: $correo", 'INFO');
-            
-            return [
-                'exito' => true,
-                'mensaje' => 'Se ha enviado un correo con instrucciones para recuperar tu contraseña.'
-            ];
+            // Aquí iría la lógica de generación de token y envío de email
         }
         
-        // Por seguridad, siempre mostrar el mismo mensaje
         return [
             'exito' => true,
             'mensaje' => 'Si el correo existe, recibirás instrucciones para recuperar tu contraseña.'
