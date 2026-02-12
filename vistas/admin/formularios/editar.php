@@ -1,266 +1,125 @@
 <?php
-require_once RUTA_UTILIDADES . '/sesion.php';
-require_once RUTA_UTILIDADES . '/permisos.php';
-require_once RUTA_CONTROLADORES . '/FormularioControlador.php';
+/**
+ * ============================================
+ * VISTA: EDITAR FORMULARIO - EcoCampSystem
+ * ============================================
+ */
 
-verificarSesion();
-verificarPermiso('admin');
+// 1. CARGA DE CONFIGURACIÓN Y SEGURIDAD
+// Subimos tres niveles para llegar a la raíz: /vistas/admin/formularios/ -> /
+require_once __DIR__ . '/../../../config/constantes.php'; //
+require_once RUTA_UTILIDADES . '/sesion.php'; //
+require_once RUTA_CONFIG . '/conexion.php'; //
+require_once RUTA_CONTROLADORES . '/FormularioControlador.php'; //
 
-if (!isset($_GET['id'])) {
-    header('Location: lista.php');
+// Iniciar sesión y validar que el usuario sea administrador
+Sesion::iniciar(); //
+Sesion::requerirTipoUsuario(TIPO_ADMINISTRADOR); //
+
+$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+$database = new Conexion(); //
+$db = $database->obtenerConexion();
+
+// 2. OBTENER DATOS ACTUALES DEL FORMULARIO
+if ($id > 0) {
+    $stmt = $db->prepare("SELECT * FROM formularios WHERE id_formulario = :id"); //
+    $stmt->execute([':id' => $id]);
+    $form = $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+// Redirigir si el formulario no existe
+if (!$form) {
+    header("Location: lista.php");
     exit;
 }
 
-$controlador = new FormularioControlador();
-$id = $_GET['id'];
+$mensaje = "";
 
-// Obtener formulario
-$resultado = $controlador->obtener($id);
-
-if (!$resultado['success']) {
-    $_SESSION['mensaje'] = $resultado['mensaje'];
-    $_SESSION['tipo_mensaje'] = 'danger';
-    header('Location: lista.php');
-    exit;
-}
-
-$formulario = $resultado['formulario'];
-$mensaje = '';
-$tipo_mensaje = '';
-
-// Procesar actualización
+// ============================================
+// PROCESAR ACTUALIZACIÓN (POST)
+// ============================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $archivo = isset($_FILES['archivo']) ? $_FILES['archivo'] : null;
-    $resultado = $controlador->actualizar($id, $_POST, $archivo);
+    $controlador = new FormularioControlador();
     
-    if ($resultado['success']) {
-        $_SESSION['mensaje'] = $resultado['mensaje'];
-        $_SESSION['tipo_mensaje'] = 'success';
-        header('Location: lista.php');
-        exit;
+    // Verificamos si existe el archivo en $_FILES, de lo contrario enviamos null
+    $archivo_nuevo = isset($_FILES['nuevo_pdf']) ? $_FILES['nuevo_pdf'] : null;
+
+    if ($controlador->actualizarPlantilla($id, $_POST, $archivo_nuevo)) {
+        $mensaje = "<div class='alert alert-success'>Cambios guardados correctamente.</div>";
+        
+        // Refrescar los datos para mostrarlos en el formulario
+        $stmt->execute([':id' => $id]);
+        $form = $stmt->fetch(PDO::FETCH_ASSOC);
     } else {
-        $mensaje = $resultado['mensaje'];
-        $tipo_mensaje = 'danger';
+        $mensaje = "<div class='alert alert-error'>Error al intentar actualizar el formulario.</div>";
     }
 }
-
-require_once RUTA_VISTAS . '/header.php';
-require_once RUTA_VISTAS . '/menu-admin.php';
 ?>
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="page-header">
-                <h1><i class="fas fa-edit"></i> Editar Formulario</h1>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="../admin/dashboard.php">Dashboard</a></li>
-                        <li class="breadcrumb-item"><a href="lista.php">Formularios</a></li>
-                        <li class="breadcrumb-item active">Editar</li>
-                    </ol>
-                </nav>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Formulario | <?php echo NOMBRE_SITIO; ?></title>
+    <link rel="stylesheet" href="<?php echo URL_PUBLIC; ?>/css/admin.css?v=<?php echo time(); ?>"> </head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>⚙️ Editar Plantilla de Formulario</h1>
+            <div class="actions">
+                <a href="lista.php" class="btn-secondary">Volver al Listado</a>
             </div>
-        </div>
-    </div>
+        </header>
 
-    <!-- Alertas -->
-    <?php if (!empty($mensaje)): ?>
-        <div class="alert alert-<?php echo $tipo_mensaje; ?> alert-dismissible fade show">
-            <?php echo $mensaje; ?>
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-        </div>
-    <?php endif; ?>
+        <?php echo $mensaje; ?>
 
-    <div class="row">
-        <!-- Formulario principal -->
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Editar Información</h3>
+        <div class="card shadow" style="max-width: 700px; margin: 20px auto; padding: 30px;">
+            <form action="" method="POST" enctype="multipart/form-data">
+                
+                <div class="form-group">
+                    <label for="titulo">Título del Formulario</label>
+                    <input type="text" id="titulo" name="titulo" value="<?php echo htmlspecialchars($form['titulo']); ?>" required>
                 </div>
-                <div class="card-body">
-                    <form method="POST" enctype="multipart/form-data">
-                        
-                        <!-- Título -->
-                        <div class="form-group">
-                            <label for="titulo">Título del Formulario <span class="text-danger">*</span></label>
-                            <input type="text" 
-                                   class="form-control" 
-                                   id="titulo" 
-                                   name="titulo" 
-                                   value="<?php echo htmlspecialchars($formulario['titulo']); ?>"
-                                   required>
-                        </div>
 
-                        <!-- Descripción -->
-                        <div class="form-group">
-                            <label for="descripcion">Descripción</label>
-                            <textarea class="form-control" 
-                                      id="descripcion" 
-                                      name="descripcion" 
-                                      rows="3"><?php echo htmlspecialchars($formulario['descripcion'] ?? ''); ?></textarea>
-                        </div>
-
-                        <!-- Tipo -->
-                        <div class="form-group">
-                            <label for="tipo">Tipo de Formulario <span class="text-danger">*</span></label>
-                            <select class="form-control" id="tipo" name="tipo" required>
-                                <option value="consentimiento" <?php echo $formulario['tipo'] == 'consentimiento' ? 'selected' : ''; ?>>
-                                    Consentimiento Informado
-                                </option>
-                                <option value="medico" <?php echo $formulario['tipo'] == 'medico' ? 'selected' : ''; ?>>
-                                    Información Médica
-                                </option>
-                                <option value="fotografico" <?php echo $formulario['tipo'] == 'fotografico' ? 'selected' : ''; ?>>
-                                    Autorización Fotográfica
-                                </option>
-                                <option value="otro" <?php echo $formulario['tipo'] == 'otro' ? 'selected' : ''; ?>>
-                                    Otro
-                                </option>
-                            </select>
-                        </div>
-
-                        <!-- Archivo actual -->
-                        <?php if (!empty($formulario['archivo_url'])): ?>
-                            <div class="alert alert-info">
-                                <strong>Archivo actual:</strong> 
-                                <a href="<?php echo $formulario['archivo_url']; ?>" target="_blank">
-                                    <i class="fas fa-file-pdf"></i> Ver archivo actual
-                                </a>
-                            </div>
-                        <?php endif; ?>
-
-                        <!-- Nuevo archivo (opcional) -->
-                        <div class="form-group">
-                            <label for="archivo">Reemplazar Archivo (Opcional)</label>
-                            <div class="custom-file">
-                                <input type="file" 
-                                       class="custom-file-input" 
-                                       id="archivo" 
-                                       name="archivo" 
-                                       accept=".pdf,.doc,.docx">
-                                <label class="custom-file-label" for="archivo">Seleccionar nuevo archivo...</label>
-                            </div>
-                            <small class="form-text text-muted">
-                                Solo si deseas cambiar el archivo. Formatos: PDF, DOC, DOCX (Max 5MB)
-                            </small>
-                        </div>
-
-                        <!-- Fecha límite -->
-                        <div class="form-group">
-                            <label for="fecha_limite">Fecha Límite de Firma</label>
-                            <input type="date" 
-                                   class="form-control" 
-                                   id="fecha_limite" 
-                                   name="fecha_limite"
-                                   value="<?php echo $formulario['fecha_limite'] ?? ''; ?>"
-                                   min="<?php echo date('Y-m-d'); ?>">
-                        </div>
-
-                        <!-- Opciones -->
-                        <div class="form-group">
-                            <div class="custom-control custom-checkbox">
-                                <input type="checkbox" 
-                                       class="custom-control-input" 
-                                       id="obligatorio" 
-                                       name="obligatorio"
-                                       <?php echo $formulario['obligatorio'] ? 'checked' : ''; ?>>
-                                <label class="custom-control-label" for="obligatorio">
-                                    <strong>Formulario Obligatorio</strong>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <div class="custom-control custom-checkbox">
-                                <input type="checkbox" 
-                                       class="custom-control-input" 
-                                       id="activo" 
-                                       name="activo"
-                                       <?php echo $formulario['activo'] ? 'checked' : ''; ?>>
-                                <label class="custom-control-label" for="activo">
-                                    <strong>Formulario Activo</strong>
-                                </label>
-                            </div>
-                        </div>
-
-                        <hr>
-
-                        <!-- Botones -->
-                        <div class="form-group">
-                            <button type="submit" class="btn btn-success">
-                                <i class="fas fa-save"></i> Guardar Cambios
-                            </button>
-                            <a href="lista.php" class="btn btn-secondary">
-                                <i class="fas fa-times"></i> Cancelar
-                            </a>
-                        </div>
-                    </form>
+                <div class="form-group">
+                    <label for="descripcion">Descripción / Instrucciones para los Padres</label>
+                    <textarea id="descripcion" name="descripcion" rows="4"><?php echo htmlspecialchars($form['descripcion']); ?></textarea>
                 </div>
-            </div>
-        </div>
 
-        <!-- Panel lateral con info -->
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    <h4 class="card-title"><i class="fas fa-info-circle"></i> Información</h4>
+                <div class="form-group">
+                    <label for="estado">Estado de la Plantilla</label>
+                    <select id="estado" name="estado" required>
+                        <option value="activo" <?php echo ($form['estado'] == 'activo') ? 'selected' : ''; ?>>Activo (Visible para padres)</option>
+                        <option value="inactivo" <?php echo ($form['estado'] == 'inactivo') ? 'selected' : ''; ?>>Inactivo (Oculto)</option>
+                        <option value="archivado" <?php echo ($form['estado'] == 'archivado') ? 'selected' : ''; ?>>Archivado</option>
+                    </select>
                 </div>
-                <div class="card-body">
-                    <p><strong>Creado:</strong><br>
-                    <?php 
-                    if ($formulario['fecha_creacion']) {
-                        $fecha = new DateTime($formulario['fecha_creacion']);
-                        echo $fecha->format('d/m/Y H:i');
-                    }
-                    ?>
-                    </p>
+
+                <div class="form-group" style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6; margin-top: 25px;">
+                    <label style="color: #0d6efd; display: block; margin-bottom: 10px;">📄 Archivo PDF (Opcional)</label>
                     
-                    <?php if (!empty($formulario['creador_nombre'])): ?>
-                        <p><strong>Creado por:</strong><br>
-                        <?php echo htmlspecialchars($formulario['creador_nombre']); ?>
-                        </p>
-                    <?php endif; ?>
-                    
-                    <hr>
-                    
-                    <?php if (isset($resultado['estadisticas'])): ?>
-                        <h5>Estadísticas</h5>
-                        <p class="mb-1">
-                            <strong>Asignados:</strong> 
-                            <?php echo $resultado['estadisticas']['total_asignados']; ?>
-                        </p>
-                        <p class="mb-1">
-                            <strong>Firmados:</strong> 
-                            <span class="text-success">
-                                <?php echo $resultado['estadisticas']['total_firmados']; ?>
-                            </span>
-                        </p>
-                        <p class="mb-1">
-                            <strong>Pendientes:</strong> 
-                            <span class="text-warning">
-                                <?php echo $resultado['estadisticas']['pendientes']; ?>
-                            </span>
-                        </p>
-                        
-                        <a href="seguimiento.php?id=<?php echo $id; ?>" class="btn btn-info btn-block mt-3">
-                            <i class="fas fa-chart-bar"></i> Ver Seguimiento Completo
+                    <p style="font-size: 13px; margin-bottom: 10px;">
+                        <strong>Archivo actual:</strong> 
+                        <a href="<?php echo URL_UPLOADS . '/formularios/' . $form['archivo_url']; ?>" target="_blank">
+                            <?php echo $form['archivo_url']; ?>
                         </a>
-                    <?php endif; ?>
+                    </p>
+
+                    <label for="nuevo_pdf" style="font-size: 14px; font-weight: normal;">Selecciona un nuevo PDF para reemplazar el anterior:</label>
+                    <input type="file" id="nuevo_pdf" name="nuevo_pdf" accept=".pdf" style="border: none; padding: 10px 0;">
+                    <p style="font-size: 12px; color: #6c757d; margin-top: 5px;">
+                        * Si dejas este campo vacío, se mantendrá el archivo actual.
+                    </p>
                 </div>
-            </div>
+
+                <div style="margin-top: 30px; display: flex; gap: 15px;">
+                    <button type="submit" class="btn-login" style="flex: 2;">Actualizar Formulario</button>
+                    <a href="lista.php" class="btn-secondary" style="flex: 1; text-align: center; padding-top: 12px; text-decoration: none;">Cancelar</a>
+                </div>
+
+            </form>
         </div>
     </div>
-</div>
-
-<script>
-// Actualizar label del archivo
-document.querySelector('.custom-file-input').addEventListener('change', function(e) {
-    const fileName = e.target.files[0]?.name || 'Seleccionar nuevo archivo...';
-    const label = e.target.nextElementSibling;
-    label.textContent = fileName;
-});
-</script>
-
-<?php require_once RUTA_VISTAS . '/footer.php';?>
+</body>
+</html>

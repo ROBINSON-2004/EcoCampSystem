@@ -1,166 +1,175 @@
 <?php
 /**
- * Controlador de Formularios
+ * ============================================
+ * CONTROLADOR DE FORMULARIOS - EcoCampSystem
+ * ============================================
  */
 
-require_once RUTA_CONFIG . '/constantes.php';
-require_once RUTA_CONFIG . '/conexion.php';
+require_once __DIR__ . '/../config/constantes.php'; 
+require_once RUTA_UTILIDADES . '/funciones.php';   // Provee limpiar_cadena()
 require_once RUTA_MODELOS . '/Formulario.php';
 require_once RUTA_MODELOS . '/FormularioCampista.php';
-require_once RUTA_UTILIDADES .'/subir-archivo.php';
 
 class FormularioControlador {
 
-    private $db;
-    private $formulario;
-    private $formularioCampista;
-
+    /**
+     * Constructor para asegurar que el motor de sesiones esté activo
+     */
     public function __construct() {
-        // USAMOS Conexion (no Database)
-        $conexion = new Conexion();
-        $this->db = $conexion->obtenerConexion();
-
-        $this->formulario = new Formulario($this->db);
-        $this->formularioCampista = new FormularioCampista($this->db);
-    }
-
-    /* =========================
-       ADMIN
-       ========================= */
-
-    public function listar($filtros = []) {
-        try {
-            return [
-                'success' => true,
-                'formularios' => $this->formulario->obtenerTodos($filtros)
-            ];
-        } catch (Exception $e) {
-            return [
-                'success' => false,
-                'mensaje' => $e->getMessage()
-            ];
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
         }
     }
 
-    public function obtener($id) {
-        $formulario = $this->formulario->obtenerPorId($id);
-
-        if (!$formulario) {
-            return [
-                'success' => false,
-                'mensaje' => 'Formulario no encontrado'
-            ];
+    /**
+     * Procesa la subida de una nueva plantilla (Administrador)
+     * @param array $datos Datos del formulario ($_POST)
+     * @param array $archivo Archivo subido ($_FILES['archivo'])
+     */
+    public function subirPlantilla($datos, $archivo) {
+        // CORRECCIÓN: Se usa 'usuario_id' según el diagnóstico de tu sesión
+        if (!isset($_SESSION['usuario_id'])) {
+            die("Error: Sesión no válida. Por favor, vuelve a iniciar sesión.");
         }
 
-        return [
-            'success' => true,
-            'formulario' => $formulario,
-            'estadisticas' => $this->formulario->obtenerEstadisticas($id)
-        ];
+        $modelo = new Formulario();
+        
+        // Sanitización y preparación de datos
+        $modelo->titulo = limpiar_cadena($datos['titulo']); 
+        $modelo->descripcion = limpiar_cadena($datos['descripcion']);
+        $modelo->tipo_formulario = $datos['tipo'];
+        $modelo->es_obligatorio = isset($datos['obligatorio']) ? 1 : 0;
+        $modelo->anio_vigencia = date('Y');
+        $modelo->subido_por = $_SESSION['usuario_id']; // ID del administrador
+        $modelo->estado = 'activo';
+
+        // Validación de formato PDF
+        $extension = strtolower(pathinfo($archivo['name'], PATHINFO_EXTENSION));
+        if ($extension !== 'pdf') {
+            return false;
+        }
+
+        // Generar nombre único y definir rutas
+        $nombre_archivo = "plantilla_" . time() . "_" . bin2hex(random_bytes(2)) . ".pdf";
+        $ruta_carpeta = RUTA_UPLOADS . "/formularios/";
+        $ruta_destino = $ruta_carpeta . $nombre_archivo;
+        
+        // Crear carpeta si no existe físicamente en XAMPP
+        if (!is_dir($ruta_carpeta)) {
+            mkdir($ruta_carpeta, 0777, true);
+        }
+
+        if (move_uploaded_file($archivo['tmp_name'], $ruta_destino)) {
+            $modelo->archivo_url = $nombre_archivo;
+            return $modelo->crear(); // Inserción en base de datos
+        }
+        
+        return false;
     }
 
-    public function crear($datos, $archivo = null) {
-        if (empty($datos['titulo']) || empty($datos['tipo'])) {
-            return [
-                'success' => false,
-                'mensaje' => 'Título y tipo son obligatorios'
-            ];
-        }
+    /**
+     * Actualiza una plantilla y gestiona el reemplazo del archivo PDF
+     */
+    /**
+ * Actualiza una plantilla y gestiona el reemplazo del archivo PDF
+ */
+    public function actualizarPlantilla($id, $datos, $nuevo_archivo = null) {
+        if (!isset($_SESSION['usuario_id'])) return false;
 
-        $archivo_url = null;
+        $db = (new Conexion())->obtenerConexion();
+        
+        // Obtener archivo actual para gestionar el reemplazo
+        $stmt = $db->prepare("SELECT archivo_url FROM formularios WHERE id_formulario = :id");
+        $stmt->execute([':id' => $id]);
+        $archivo_actual = $stmt->fetchColumn();
+        $nombre_archivo_final = $archivo_actual;
 
-        if ($archivo && $archivo['error'] === UPLOAD_ERR_OK) {
-            $subida = subirArchivo($archivo, 'formularios', ['pdf', 'doc', 'docx']);
-            if (!$subida['success']) return $subida;
-            $archivo_url = $subida['ruta'];
-        }
+        // Si se sube un nuevo archivo, reemplazamos el anterior
+        if ($nuevo_archivo && $nuevo_archivo['error'] === UPLOAD_ERR_OK) {
+            $extension = strtolower(pathinfo($nuevo_archivo['name'], PATHINFO_EXTENSION));
+            
+            if ($extension === 'pdf') {
+                // RUTA CORRECTA (Sin guiones bajos extra)
+                $ruta_vieja = RUTA_UPLOADS . "/formularios/" . $archivo_actual;
+                
+                if (!empty($archivo_actual) && file_exists($ruta_vieja)) {
+                    unlink($ruta_vieja); // <-- AQUÍ ESTABA EL ERROR: Asegúrate que diga $ruta_vieja
+                }
 
-        $this->formulario->titulo = $datos['titulo'];
-        $this->formulario->descripcion = $datos['descripcion'] ?? '';
-        $this->formulario->archivo_url = $archivo_url;
-        $this->formulario->tipo = $datos['tipo'];
-        $this->formulario->obligatorio = isset($datos['obligatorio']) ? 1 : 0;
-        $this->formulario->activo = isset($datos['activo']) ? 1 : 0;
-        $this->formulario->fecha_limite = $datos['fecha_limite'] ?? null;
-        $this->formulario->creado_por = $_SESSION['usuario_id'] ?? null;
-
-        if ($this->formulario->crear()) {
-            if (!empty($datos['asignar_todos'])) {
-                $this->formulario->asignarATodos($this->formulario->id);
+                // Subir el nuevo archivo
+                $nombre_archivo_final = "plantilla_" . time() . ".pdf";
+                move_uploaded_file($nuevo_archivo['tmp_name'], RUTA_UPLOADS . "/formularios/" . $nombre_archivo_final);
             }
-
-            return [
-                'success' => true,
-                'mensaje' => 'Formulario creado correctamente'
-            ];
         }
 
-        return [
-            'success' => false,
-            'mensaje' => 'No se pudo crear el formulario'
-        ];
+        $sql = "UPDATE formularios SET titulo = :t, descripcion = :d, estado = :e, archivo_url = :url WHERE id_formulario = :id";
+        $upd = $db->prepare($sql);
+        return $upd->execute([
+            ':t'   => limpiar_cadena($datos['titulo']),
+            ':d'   => limpiar_cadena($datos['descripcion']),
+            ':e'   => $datos['estado'],
+            ':url' => $nombre_archivo_final,
+            ':id'  => $id
+        ]);
     }
 
-    /* =========================
-       PADRE
-       ========================= */
+    /**
+     * Elimina una plantilla y maneja errores de integridad referencial
+     */
+    public function eliminarPlantilla($id) {
+        if (!isset($_SESSION['usuario_id'])) return "Error de sesión.";
 
-    public function obtenerFormulariosPadre($id_padre, $filtros = []) {
+        $db = (new Conexion())->obtenerConexion();
+        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
         try {
-            return [
-                'success' => true,
-                'formularios' => $this->formularioCampista->obtenerPorPadre($id_padre, $filtros),
-                'pendientes' => $this->formularioCampista->obtenerPendientesPadre($id_padre)
-            ];
-        } catch (Exception $e) {
-            return [
-                'success' => false,
-                'mensaje' => $e->getMessage()
-            ];
+            $stmt = $db->prepare("SELECT archivo_url FROM formularios WHERE id_formulario = :id");
+            $stmt->execute([':id' => $id]);
+            $archivo = $stmt->fetchColumn();
+
+            $del = $db->prepare("DELETE FROM formularios WHERE id_formulario = :id");
+            $del->execute([':id' => $id]);
+
+            if ($archivo) {
+                $ruta_fisica = RUTA_UPLOADS . "/formularios/" . $archivo;
+                if (file_exists($ruta_fisica)) {
+                    unlink($ruta_fisica);
+                }
+            }
+            return true;
+
+        } catch (PDOException $e) {
+            if ($e->getCode() == '23000') {
+                return "No se puede eliminar: El formulario ya ha sido firmado por padres.";
+            }
+            return "Error: " . $e->getMessage();
         }
     }
 
-    public function firmarFormulario($id_formulario, $id_campista, $archivo = null) {
+    /**
+     * Procesa la subida del documento firmado por el Padre
+     */
+    public function firmarFormularioPadre($id_form, $id_campista, $archivo) {
+        // CORRECCIÓN: Se usa 'usuario_id' para consistencia con el portal de padres
+        if (!isset($_SESSION['usuario_id'])) return false;
 
-        $asignado = $this->formularioCampista
-            ->obtenerFormularioCampista($id_formulario, $id_campista);
+        $extension = strtolower(pathinfo($archivo['name'], PATHINFO_EXTENSION));
+        if ($extension !== 'pdf') return false;
 
-        if (!$asignado) {
-            return [
-                'success' => false,
-                'mensaje' => 'Formulario no asignado'
-            ];
+        $nombre_archivo = "firmado_" . time() . "_c" . $id_campista . ".pdf";
+        $ruta_destino = RUTA_UPLOADS . "/documentos/" . $nombre_archivo;
+
+        if (!is_dir(RUTA_UPLOADS . "/documentos/")) {
+            mkdir(RUTA_UPLOADS . "/documentos/", 0777, true);
         }
 
-        if ($asignado['firmado']) {
-            return [
-                'success' => false,
-                'mensaje' => 'Formulario ya firmado'
-            ];
+        if (move_uploaded_file($archivo['tmp_name'], $ruta_destino)) {
+            $modelo_fc = new FormularioCampista();
+            // Registra quién firmó usando la variable de sesión corregida
+            return $modelo_fc->registrarFirma($id_form, $id_campista, $_SESSION['usuario_id'], $nombre_archivo);
         }
-
-        $documento_url = null;
-
-        if ($archivo && $archivo['error'] === UPLOAD_ERR_OK) {
-            $subida = subirArchivo($archivo, 'documentos', ['pdf']);
-            if (!$subida['success']) return $subida;
-            $documento_url = $subida['ruta'];
-        }
-
-        $ip = $_SERVER['REMOTE_ADDR'] ?? null;
-
-        if ($this->formularioCampista
-            ->firmar($id_formulario, $id_campista, $documento_url, $ip)) {
-
-            return [
-                'success' => true,
-                'mensaje' => 'Formulario firmado correctamente'
-            ];
-        }
-
-        return [
-            'success' => false,
-            'mensaje' => 'No se pudo firmar'
-        ];
+        
+        return false;
     }
 }
+?>
