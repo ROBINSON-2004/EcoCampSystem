@@ -29,19 +29,20 @@ $padre_modelo->leerPorIdUsuario();
  * Se cambió 'fc.id_registro' por 'fc.id_formulario' para la validación del LEFT JOIN.
  * Si no hay un registro en la tabla formularios_campistas, esa columna será NULL.
  */
+// --- LÓGICA DE FORMULARIOS PENDIENTES FILTRADA POR ESTADO ---
 $sql_pendientes = "SELECT COUNT(*) 
                    FROM campistas c
                    CROSS JOIN formularios f
                    LEFT JOIN formularios_campistas fc ON f.id_formulario = fc.id_formulario 
                         AND c.id_campista = fc.id_campista
                    WHERE c.id_padre = :id_p 
+                     AND c.estado_inscripcion = 'aprobado' -- FILTRO POR HIJO APROBADO
                      AND f.estado = 'activo' 
                      AND fc.id_formulario IS NULL";
 
 $stmt_p = $db->prepare($sql_pendientes);
 $stmt_p->execute([':id_p' => $padre_modelo->id_padre]);
 $total_pendientes = $stmt_p->fetchColumn();
-
 // 4. ESTADÍSTICAS DE HIJOS
 $campista_modelo = new Campista();
 $mis_hijos = $campista_modelo->leerPorPadre($padre_modelo->id_padre);

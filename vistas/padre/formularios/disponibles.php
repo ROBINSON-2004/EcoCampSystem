@@ -24,8 +24,7 @@ $padre_modelo = new Padre();
 $padre_modelo->id_usuario = $datos_usuario['id'];
 $padre_modelo->leerPorIdUsuario();
 
-// 4. CONSULTA DE DOCUMENTOS PENDIENTES POR HIJO
-// Buscamos qué formularios activos NO han sido firmados por cada hijo de este padre
+// 4. CONSULTA DE DOCUMENTOS PENDIENTES (SOLO HIJOS APROBADOS)
 $sql = "SELECT c.id_campista, c.nombre AS hijo_nombre, c.apellido AS hijo_apellido,
                f.id_formulario, f.titulo AS form_titulo, f.archivo_url AS plantilla_pdf
         FROM campistas c
@@ -33,8 +32,9 @@ $sql = "SELECT c.id_campista, c.nombre AS hijo_nombre, c.apellido AS hijo_apelli
         LEFT JOIN formularios_campistas fc ON f.id_formulario = fc.id_formulario 
              AND c.id_campista = fc.id_campista
         WHERE c.id_padre = :id_p 
+          AND c.estado_inscripcion = 'aprobado' -- SOLO HIJOS APROBADOS
           AND f.estado = 'activo' 
-          AND fc.id_formulario IS NULL"; // Filtramos solo los que faltan
+          AND fc.id_formulario IS NULL";
 
 $stmt = $db->prepare($sql);
 $stmt->execute([':id_p' => $padre_modelo->id_padre]);
