@@ -1,34 +1,113 @@
 <?php
+require_once __DIR__ . '/../../config/constantes.php';
+require_once RUTA_UTILIDADES . '/sesion.php';
+require_once RUTA_CONTROLADORES . '/NotificacionControlador.php';
+require_once RUTA_CONFIG . '/conexion.php';
+
+Sesion::iniciar();
+// Asumimos que TIPO_CONSEJERO está definido en constantes [cite: 146]
 Sesion::requerirTipoUsuario(TIPO_CONSEJERO);
-$datos_usuario = Sesion::obtenerDatosUsuario();
+
+$id_usuario = $_SESSION['usuario_id'];
+$db = (new Conexion())->obtenerConexion();
+
+// 1. Obtener el grupo asignado al consejero [cite: 35]
+$stmt_g = $db->prepare("SELECT id_grupo, nombre_grupo FROM grupos WHERE id_consejero = :id_u AND estado = 'activo' LIMIT 1");
+$stmt_g->execute([':id_u' => $id_usuario]);
+$grupo = $stmt_g->fetch(PDO::FETCH_ASSOC);
+
+// 2. Obtener agenda del día si tiene grupo [cite: 14]
+$agenda = [];
+if ($grupo) {
+    $stmt_a = $db->prepare("SELECT ap.*, a.nombre_actividad, a.ubicacion 
+                            FROM actividades_programadas ap
+                            JOIN actividades a ON ap.id_actividad = a.id_actividad
+                            WHERE ap.id_grupo = :id_g AND ap.fecha_actividad = CURDATE()
+                            ORDER BY ap.hora_inicio ASC");
+    $stmt_a->execute([':id_g' => $grupo['id_grupo']]);
+    $agenda = $stmt_a->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// 3. Obtener notificaciones sin leer 
+$modelo_n = new Notificacion();
+$alertas = $modelo_n->obtenerPorUsuario($id_usuario, true);
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Consejero - <?php echo NOMBRE_SITIO; ?></title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; min-height: 100vh; }
-        .header { background: linear-gradient(135deg, #9f7aea 0%, #805ad5 100%); color: white; padding: 20px 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
-        .header h1 { font-size: 1.8rem; }
-        .btn-logout { background: rgba(255,255,255,0.2); color: white; padding: 8px 20px; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; text-decoration: none; }
-        .container { max-width: 1200px; margin: 40px auto; padding: 0 40px; }
-        .welcome { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center; }
-        .welcome h2 { color: #333; font-size: 2rem; margin-bottom: 15px; }
-    </style>
+    <title>Panel Consejero | <?php echo NOMBRE_SITIO; ?></title>
+    <link rel="stylesheet" href="<?php echo URL_PUBLIC; ?>/css/admin.css?v=<?php echo time(); ?>">
+    <script>
+        setTimeout(function(){ location.reload(); }, 120000);
+    </script>
 </head>
-<body>
-    <div class="header">
-        <h1>🏕️ Panel Consejero</h1>
-        <a href="<?php echo URL_BASE; ?>/logout.php" class="btn-logout">Cerrar Sesión</a>
-    </div>
-    <div class="container">
-        <div class="welcome">
-            <h2>Bienvenido, <?php echo $datos_usuario['nombre']; ?>! 🎯</h2>
-            <p>Este es tu panel de consejero</p>
+<body style="background: #f0f4f8;">
+
+<div class="container">
+    <header class="header" style="background: #2c5282; padding: 25px; border-radius: 0 0 15px 15px;">
+        <h1 style="color: white;">🏃 Panel del Consejero</h1>
+        <div class="user-info" style="color: #ebf8ff;">
+            Bienvenido, <strong><?php echo $_SESSION['usuario_nombre']; ?></strong> 
+            <?php if($grupo): ?> | Grupo: <span class="badge"><?php echo $grupo['nombre_grupo']; ?></span><?php endif; ?>
+        </div>
+    </header>
+
+    <?php if (!empty($alertas)): ?>
+        <div class="alerts-section" style="margin-top: 20px;">
+            <?php foreach ($alertas as $a): ?>
+                <div class="card shadow" style="border-left: 5px solid #e53e3e; margin-bottom: 15px; background: #fff5f5;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <strong>⚠️ <?php echo htmlspecialchars($a['titulo']); ?></strong>
+                        <small><?php echo date('H:i', strtotime($a['fecha_envio'])); ?></small>
+                    </div>
+                    <p style="font-size: 0.9rem; margin: 10px 0;"><?php echo htmlspecialchars($a['mensaje']); ?></p>
+                    <button onclick="marcarLeida(<?php echo $a['id_notificacion_usuario']; ?>)" class="btn-small">Entendido</button>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+
+    <div class="card shadow" style="margin-top: 30px;">
+        <div class="card-header">
+            <h2>📅 Mi Agenda de Hoy</h2>
+        </div>
+        <div class="card-body">
+            <?php if ($agenda): ?>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Hora</th>
+                            <th>Actividad</th>
+                            <th>Ubicación</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($agenda as $ev): ?>
+                            <tr>
+                                <td><?php echo date('H:i', strtotime($ev['hora_inicio'])); ?></td>
+                                <td><strong><?php echo htmlspecialchars($ev['nombre_actividad']); ?></strong></td>
+                                <td>📍 <?php echo htmlspecialchars($ev['ubicacion']); ?></td>
+                                <td><span class="badge"><?php echo ucfirst($ev['estado']); ?></span></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php else: ?>
+                <p style="text-align: center; color: #718096; padding: 20px;">No tienes actividades programadas para hoy.</p>
+            <?php endif; ?>
         </div>
     </div>
+</div>
+
+<script>
+function marcarLeida(id) {
+    // Aquí podrías usar una llamada AJAX para marcar sin recargar
+    fetch('marcar_leida.php?id=' + id).then(() => location.reload());
+}
+</script>
+
 </body>
 </html>

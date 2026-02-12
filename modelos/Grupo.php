@@ -1,6 +1,35 @@
 <?php
 require_once RUTA_CONFIG . '/conexion.php';
 
+class CampistaGrupo {
+    private $conexion;
+    private $tabla = 'campistas_grupos';
+
+    public function __construct() {
+        $database = new Conexion();
+        $this->conexion = $database->obtenerConexion();
+    }
+
+    /**
+     * Asigna un campista a un grupo [cite: 85, 87, 88]
+     */
+    public function asignar($id_campista, $id_grupo) {
+        // Primero desactivamos cualquier asignación previa del niño para este año
+        $sql_update = "UPDATE " . $this->tabla . " SET estado = 'inactivo' WHERE id_campista = :id_c";
+        $stmt_up = $this->conexion->prepare($sql_update);
+        $stmt_up->execute([':id_c' => $id_campista]);
+
+        // Insertamos la nueva asignación [cite: 85, 89, 90]
+        $sql = "INSERT INTO " . $this->tabla . " (id_campista, id_grupo, fecha_asignacion, estado) 
+                VALUES (:id_c, :id_g, NOW(), 'activo')";
+        
+        $stmt = $this->conexion->prepare($sql);
+        return $stmt->execute([
+            ':id_c' => $id_campista,
+            ':id_g' => $id_grupo
+        ]);
+    }
+}
 /**
  * Clase Grupo
  * Modelo para gestionar grupos del campamento

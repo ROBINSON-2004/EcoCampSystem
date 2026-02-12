@@ -1,0 +1,94 @@
+/* Contenedor Principal */
+.notificaciones-container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 0 15px;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Estilo de la Tarjeta de Notificación */
+.notif-card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    margin-bottom: 20px;
+    border-left: 6px solid #cbd5e0; /* Color para leídas */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+}
+
+.notif-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Estado: NO LEÍDA */
+.notif-unread {
+    border-left-color: #4a90e2; /* Azul EcoCamp */
+    background-color: #f0f7ff;
+}
+
+/* Encabezado: Fecha y Badge */
+.notif-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.notif-date {
+    font-size: 0.85rem;
+    color: #718096;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.badge-new {
+    background: #e53e3e;
+    color: white;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Cuerpo del Mensaje */
+.notif-title {
+    margin: 0 0 10px 0;
+    color: #2d3748;
+    font-size: 1.25rem;
+}
+
+.notif-body {
+    color: #4a5568;
+    line-height: 1.6;
+    font-size: 1rem;
+    margin-bottom: 15px;
+}
+
+.notif-sender {
+    font-size: 0.85rem;
+    color: #a0aec0;
+    font-style: italic;
+}
+
+/* Botón de Acción */
+.btn-leer {
+    display: inline-block;
+    background: #4a90e2;
+    color: white !important;
+    text-decoration: none;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.btn-leer:hover {
+    background: #357abd;
+}

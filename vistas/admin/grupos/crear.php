@@ -3,6 +3,7 @@ require_once __DIR__ . '/../../../config/constantes.php';
 require_once RUTA_UTILIDADES . '/sesion.php';
 require_once RUTA_UTILIDADES . '/funciones.php';
 require_once RUTA_CONTROLADORES . '/GrupoControlador.php';
+require_once RUTA_MODELOS . '/Grupo.php';
 
 Sesion::requerirTipoUsuario(TIPO_ADMINISTRADOR);
 
@@ -17,6 +18,31 @@ $consejeros = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $error = '';
 $datos_formulario = [];
+
+class GrupoControlador {
+    /**
+     * Procesa la creación de un nuevo grupo
+     */
+    public function crear($datos) {
+        // Validaciones básicas
+        if (empty($datos['nombre_grupo'])) {
+            return ['exito' => false, 'mensaje' => 'El nombre del grupo es obligatorio.'];
+        }
+
+        $modelo = new Grupo();
+        $id_nuevo = $modelo->crear($datos);
+
+        if ($id_nuevo) {
+            return [
+                'exito' => true, 
+                'mensaje' => 'Grupo creado exitosamente.', 
+                'id_grupo' => $id_nuevo
+            ];
+        }
+
+        return ['exito' => false, 'mensaje' => 'Error al guardar el grupo en la base de datos.'];
+    }
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $controlador = new GrupoControlador();
