@@ -68,23 +68,6 @@ $mensaje = Sesion::obtenerMensaje();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Panel | <?php echo NOMBRE_SITIO; ?></title>
     <link rel="stylesheet" href="<?php echo URL_PUBLIC; ?>/css/padre.css?v=<?php echo time(); ?>">
-    <style>
-        .action-card { position: relative; }
-        .badge-danger {
-            background: #ef4444;
-            color: white;
-            padding: 3px 9px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            border: 2px solid white;
-        }
-        .text-alert { color: #dc2626; font-weight: bold; font-size: 0.85rem; }
-    </style>
 </head>
 <body>
     <div class="header">

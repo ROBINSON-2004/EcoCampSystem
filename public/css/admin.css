@@ -2,18 +2,30 @@
    ESTILOS ADMINISTRATIVOS - EcoCampSystem
    ============================================ */
 
+/* ================================
+   VARIABLES CSS
+   ================================ */
 :root {
     --primary-color: #1976d2;
     --secondary-color: #6c757d;
     --success-color: #2e7d32;
     --error-color: #d32f2f;
+    --danger-color: #e53935;
     --bg-color: #f4f7f6;
     --card-bg: #ffffff;
     --text-color: #333;
+    --text-muted: #495057;
+    --border-color: #ddd;
+    --border-light: #e0e0e0;
+    --hover-bg: #f1f8ff;
     --border-radius: 8px;
     --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-hover: 0 2px 8px rgba(25, 118, 210, 0.3);
 }
 
+/* ================================
+   RESET Y ESTILOS BASE
+   ================================ */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--bg-color);
@@ -22,29 +34,42 @@ body {
     padding: 0;
 }
 
+/* ================================
+   LAYOUT
+   ================================ */
 .container {
     max-width: 1200px;
-    margin: 0 auto;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+.container-center {
+    width: 100%;
+    max-width: 500px;
     padding: 20px;
 }
 
-/* --- Header --- */
+/* ================================
+   HEADER
+   ================================ */
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 2px solid #ddd;
+    border-bottom: 2px solid var(--border-light);
     padding-bottom: 15px;
     margin-bottom: 30px;
 }
 
 .header h1 {
-    font-size: 24px;
+    font-size: 1.8rem;
     margin: 0;
     color: var(--primary-color);
 }
 
-/* --- Tarjetas (Cards) --- */
+/* ================================
+   TARJETAS (CARDS)
+   ================================ */
 .card {
     background: var(--card-bg);
     border-radius: var(--border-radius);
@@ -56,7 +81,17 @@ body {
     box-shadow: var(--shadow);
 }
 
-/* --- Formularios --- */
+.delete-card {
+    background: var(--card-bg);
+    border-radius: 15px;
+    padding: 40px;
+    text-align: center;
+    border-top: 6px solid var(--danger-color);
+}
+
+/* ================================
+   FORMULARIOS
+   ================================ */
 .form-group {
     margin-bottom: 20px;
 }
@@ -65,9 +100,14 @@ body {
     display: block;
     font-weight: 600;
     margin-bottom: 8px;
+    color: var(--text-color);
 }
 
 .form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"],
+.form-group input[type="number"],
+.form-group input[type="date"],
 .form-group input[type="file"],
 .form-group textarea,
 .form-group select {
@@ -76,52 +116,140 @@ body {
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 14px;
-    box-sizing: border-box; /* Asegura que el padding no rompa el ancho */
+    box-sizing: border-box;
+    font-family: inherit;
 }
 
 .form-group textarea {
     resize: vertical;
+    min-height: 100px;
 }
 
 .form-group input:focus, 
+.form-group textarea:focus,
 .form-group select:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
 }
 
-/* --- Botones --- */
+.form-group small {
+    display: block;
+    margin-top: 5px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+/* ================================
+   BOTONES
+   ================================ */
 .btn-login {
     background-color: var(--primary-color);
     color: white;
     border: none;
     padding: 12px 20px;
     border-radius: var(--border-radius);
-    font-weight: bold;
+    font-weight: 600;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: all 0.3s ease;
     text-transform: uppercase;
+    display: inline-block;
 }
 
 .btn-login:hover {
     background-color: #1565c0;
+    box-shadow: var(--shadow-hover);
 }
 
 .btn-secondary {
-    background-color: var(--secondary-color);
-    color: white;
-    padding: 8px 15px;
-    border-radius: var(--border-radius);
+    background-color: #f5f5f5;
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 10px 20px;
+    border-radius: 6px;
     text-decoration: none;
     font-size: 14px;
-    transition: opacity 0.3s;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-block;
+    cursor: pointer;
+    margin-left: 10px;
 }
 
 .btn-secondary:hover {
-    opacity: 0.8;
+    background-color: #eeeeee;
 }
 
-/* --- Alertas --- */
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    color: #ffffff;
+    background-color: var(--primary-color);
+    padding: 8px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    margin-bottom: 20px;
+}
+
+.btn-back:hover {
+    background-color: #1565c0;
+    transform: translateX(-3px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-back span {
+    margin-right: 8px;
+    font-size: 1.1rem;
+}
+
+.btn-danger-confirm {
+    flex: 1;
+    background-color: var(--danger-color);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: var(--border-radius);
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-danger-confirm:hover {
+    background-color: #c62828;
+}
+
+.btn-cancel {
+    flex: 1;
+    background-color: #f7fafc;
+    color: #4a5568;
+    border: 1px solid #e2e8f0;
+    padding: 12px;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s;
+}
+
+.btn-cancel:hover {
+    background-color: #edf2f7;
+}
+
+.button-group {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+/* ================================
+   ALERTAS
+   ================================ */
 .alert {
     padding: 15px;
     border-radius: var(--border-radius);
@@ -142,168 +270,12 @@ body {
     border: 1px solid #ffcdd2;
 }
 
-small {
-    display: block;
-    margin-top: 5px;
-}
-/* ============================================
-   ESTILOS DE TABLAS Y GESTIÓN - EcoCampSystem
-   ============================================ */
-
-/* --- Contenedor y Header --- */
-.container {
-    max-width: 1200px;
-    margin: 30px auto;
-    padding: 0 20px;
-}
-
-.header {
-    margin-bottom: 25px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid #e0e0e0;
-}
-
-.header h1 {
-    color: #333;
-    font-size: 1.8rem;
-    margin: 0;
-}
-
-/* --- Botones y Acciones --- */
-.btn-login, .btn-secondary {
-    padding: 10px 20px;
-    border-radius: 6px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    display: inline-block;
-    cursor: pointer;
-}
-
-.btn-login {
-    background-color: #1976d2;
-    color: white;
-    border: none;
-}
-
-.btn-login:hover {
-    background-color: #1565c0;
-    box-shadow: 0 2px 8px rgba(25, 118, 210, 0.3);
-}
-
-.btn-secondary {
-    background-color: #f5f5f5;
-    color: #333;
-    border: 1px solid #ddd;
-    text-decoration: none;
-    margin-left: 10px;
-}
-
-.btn-secondary:hover {
-    background-color: #eeeeee;
-}
-
-/* --- Estilos de la Tabla --- */
-.table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: #fff;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.table thead {
-    background-color: #f8f9fa;
-    border-bottom: 2px solid #dee2e6;
-}
-
-.table th {
-    text-align: left;
-    padding: 15px;
-    color: #495057;
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.85rem;
-}
-
-.table td {
-    padding: 15px;
-    border-bottom: 1px solid #edf2f7;
-    vertical-align: middle;
-    color: #333;
-}
-
-.table tr:hover {
-    background-color: #f1f8ff; /* Color de realce al pasar el mouse */
-}
-
-/* --- Badges (Etiquetas de Estado) --- */
-.badge {
-    padding: 5px 10px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    display: inline-block;
-    background-color: #e2e8f0; /* Color gris por defecto */
-    color: #4a5568;
-}
-
-/* El CSS respeta los estilos inline de colores que pusiste en el PHP, 
-   pero añade estructura. */
-
-/* --- Enlaces de Acciones en la Tabla --- */
-.table td a {
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.9rem;
-    transition: opacity 0.2s;
-}
-
-.table td a:hover {
-    text-decoration: underline;
-    opacity: 0.8;
-}
-/* --- Estilos para la confirmación de eliminación --- */
-.bg-danger-light {
-    background-color: #fce4e4; /* Fondo rosado suave como en tu captura */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    margin: 0;
-}
-
-.container-center {
-    width: 100%;
-    max-width: 500px;
-    padding: 20px;
-}
-
-.delete-card {
-    background: #ffffff;
-    border-radius: 15px;
-    padding: 40px;
-    text-align: center;
-    border-top: 6px solid #e53935;
-}
-
-.warning-icon {
-    font-size: 50px;
-    margin-bottom: 10px;
-}
-
-.item-title {
-    color: #333;
-    font-size: 1.4rem;
-    margin: 10px 0 25px 0;
-}
-
 .info-alert {
     background-color: #fff5f5;
     border: 1px solid #feb2b2;
     color: #c53030;
     padding: 15px;
-    border-radius: 8px;
+    border-radius: var(--border-radius);
     font-size: 0.9rem;
     margin-bottom: 30px;
 }
@@ -316,73 +288,240 @@ small {
     margin-bottom: 20px;
     font-size: 0.85rem;
     text-align: left;
-    border-left: 4px solid #e53935;
+    border-left: 4px solid var(--danger-color);
 }
 
-.button-group {
+/* ================================
+   BACKGROUNDS ESPECIALES
+   ================================ */
+.bg-danger-light {
+    background-color: #fce4e4;
     display: flex;
-    gap: 15px;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
 }
 
-.btn-danger-confirm {
-    flex: 1;
-    background-color: #e53935;
-    color: white;
-    border: none;
-    padding: 12px;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.3s;
+/* ================================
+   TABLAS
+   ================================ */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--card-bg);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    border-radius: var(--border-radius);
+    overflow: hidden;
 }
 
-.btn-danger-confirm:hover {
-    background-color: #c62828;
+.table thead {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
 }
 
-.btn-cancel {
-    flex: 1;
-    background-color: #f7fafc;
-    color: #4a5568;
-    border: 1px solid #e2e8f0;
-    padding: 12px;
-    border-radius: 8px;
+.table th {
+    text-align: left;
+    padding: 15px;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+}
+
+.table td {
+    padding: 15px;
+    border-bottom: 1px solid #edf2f7;
+    vertical-align: middle;
+    color: var(--text-color);
+}
+
+.table tbody tr:hover {
+    background-color: var(--hover-bg);
+    transition: background-color 0.2s ease;
+}
+
+.table td a {
     text-decoration: none;
     font-weight: 600;
+    font-size: 0.9rem;
+    transition: opacity 0.2s;
+}
+
+.table td a:hover {
+    text-decoration: underline;
+    opacity: 0.8;
+}
+
+/* ================================
+   BADGES (ETIQUETAS DE ESTADO)
+   ================================ */
+.badge {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-block;
+    background-color: #e2e8f0;
+    color: #4a5568;
+}
+
+/* ================================
+   ELEMENTOS DE INFORMACIÓN
+   ================================ */
+.warning-icon {
+    font-size: 50px;
+    margin-bottom: 10px;
+}
+
+.item-title {
+    color: var(--text-color);
+    font-size: 1.4rem;
+    margin: 10px 0 25px 0;
+}
+
+/* ================================
+   RESPONSIVE
+   ================================ */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 15px;
+    }
+    
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .table {
+        font-size: 0.9rem;
+    }
+    
+    .table th,
+    .table td {
+        padding: 10px;
+    }
+    
+    .button-group {
+        flex-direction: column;
+    }
+    
+    .btn-secondary {
+        margin-left: 0;
+        margin-top: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header h1 {
+        font-size: 1.4rem;
+    }
+    
+    .delete-card {
+        padding: 25px;
+    }
+    
+    .item-title {
+        font-size: 1.2rem;
+    }
+}
+/* ================================
+   NUEVA DISTRIBUCIÓN DETALLE
+   ================================ */
+
+.info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.info-subtitle {
+    margin: 5px 0 0 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.info-layout {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.info-column {
+    flex: 1;
+    min-width: 250px;
+}
+
+.info-summary {
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.btn-cancel:hover {
-    background-color: #edf2f7;
+.summary-box {
+    background: linear-gradient(135deg, #1976d2, #1565c0);
+    color: white;
+    padding: 25px;
+    border-radius: var(--border-radius);
+    text-align: center;
+    width: 180px;
+    box-shadow: var(--shadow);
 }
-/* --- Estilo para el botón de retroceso/inicio --- */
-.btn-back {
-    display: inline-flex;
+
+.summary-number {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.summary-text {
+    font-size: 0.85rem;
+    margin-top: 5px;
+    opacity: 0.9;
+}
+/* ================================
+   PAGE HEADER MODERNO
+   ================================ */
+
+.page-header {
+    background: white;
+    padding: 25px 30px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    text-decoration: none;
-    color: #ffffff; /* Gris oscuro profesional */
-    background-color: #1976D2;
-    padding: 8px 16px;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
+}
+
+.page-title {
+    margin: 0;
+    font-size: 1.8rem;
+    color: var(--primary-color);
+}
+
+.breadcrumb-modern {
+    margin-top: 8px;
     font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.breadcrumb-modern a {
+    text-decoration: none;
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+.breadcrumb-modern span {
+    margin: 0 6px;
+}
+
+.breadcrumb-modern .active {
     font-weight: 600;
-    transition: all 0.2s ease;
-    margin-bottom: 20px;
+    color: var(--text-color);
 }
 
-.btn-back:hover {
-    background-color: #f7fafc;
-    color: #2d3748;
-    border-color: #cbd5e0;
-    transform: translateX(-3px); /* Pequeño desplazamiento a la izquierda */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-/* Espaciado del icono de flecha */
-.btn-back span {
-    margin-right: 8px;
-    font-size: 1.1rem;
+.page-header-right .btn {
+    padding: 8px 18px;
 }

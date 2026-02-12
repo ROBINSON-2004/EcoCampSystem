@@ -151,8 +151,7 @@ $mensaje = Sesion::obtenerMensaje();
                 
                 <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #f1f5f9;">
                 <a href="editar.php?id=<?php echo $id_campista; ?>" class="btn btn-edit">✏️ Editar Información</a>
-                
-                <a href="../panel.php" class="btn btn-back">Volver al Inicio</a>
+                <a href="../dashboard.php" class="btn btn-back">Volver al Inicio</a>
             </div>
 
 

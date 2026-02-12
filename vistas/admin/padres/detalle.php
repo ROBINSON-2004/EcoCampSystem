@@ -3,6 +3,7 @@ require_once __DIR__ . '/../../../config/constantes.php';
 require_once RUTA_UTILIDADES . '/sesion.php';
 require_once RUTA_UTILIDADES . '/funciones.php';
 require_once RUTA_CONTROLADORES . '/PadreControlador.php';
+require_once RUTA_CONFIG . '/conexion.php';
 
 // Requerir autenticación de administrador
 Sesion::requerirTipoUsuario(TIPO_ADMINISTRADOR);
@@ -26,6 +27,13 @@ if (!$padre) {
     exit();
 }
 
+// Capturar hijos aprobados
+$database = new Conexion();
+$db = $database->obtenerConexion();
+$stmt_hijos = $db->prepare("SELECT * FROM campistas WHERE id_padre = :id_p AND estado_inscripcion = 'aprobado'");
+$stmt_hijos->execute([':id_p' => $id_padre]);
+$hijos_aprobados = $stmt_hijos->fetchAll(PDO::FETCH_ASSOC);
+
 // Procesar acciones (activar/desactivar)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'])) {
     if ($_POST['accion'] === 'desactivar') {
@@ -42,161 +50,143 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'])) {
 }
 
 $mensaje = Sesion::obtenerMensaje();
-?>
-<!DOCTYPE html>
+?><!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detalle de Padre - <?php echo NOMBRE_SITIO; ?></title>
-    <link rel="stylesheet" href="<?php echo URL_PUBLIC; ?>/css/padre.css">
-    
+    <link rel="stylesheet" href="<?php echo URL_PUBLIC; ?>/css/admin.css?v=<?php echo time(); ?>">
 </head>
 <body>
-    <div class="header">
-        <h1>👤 Detalle del Padre</h1>
-        <a href="lista.php">← Volver a la lista</a>
-    </div>
-    
+
     <div class="container">
-        <div class="breadcrumb">
-            <a href="<?php echo URL_BASE; ?>/panel.php">Inicio</a> / 
-            <a href="lista.php">Padres</a> / 
-            <span>Detalle</span>
+
+        <!-- HEADER -->
+        <div class="header">
+            <h1>👤 Detalle del Padre</h1>
+            <a href="lista.php" class="btn-back">
+                <span>←</span> Volver a la lista
+            </a>
         </div>
-        
+
+        <!-- MENSAJES -->
         <?php if ($mensaje): ?>
             <div class="alert alert-<?php echo $mensaje['tipo'] === 'exito' ? 'success' : 'error'; ?>">
                 <?php echo $mensaje['contenido']; ?>
             </div>
         <?php endif; ?>
-        
-        <!-- Información Personal -->
-        <div class="card">
-            <div class="card-header">
+
+        <!-- INFORMACIÓN PERSONAL -->
+        <div class="card shadow">
+            <div class="info-section">
                 <h2>📋 Información Personal</h2>
-                <span class="estado-badge estado-<?php echo $padre['estado']; ?>">
+
+                <span class="badge 
+                    <?php echo $padre['estado'] === ESTADO_ACTIVO ? 'badge-active' : 'badge-inactive'; ?>">
                     <?php echo ucfirst($padre['estado']); ?>
                 </span>
             </div>
-            <div class="card-body">
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-label">Nombre Completo</div>
-                        <div class="info-value">
-                            <?php echo htmlspecialchars($padre['nombre'] . ' ' . $padre['apellido']); ?>
-                        </div>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Nombre Completo</div>
+                    <div class="info-value">
+                        <?php echo htmlspecialchars($padre['nombre'] . ' ' . $padre['apellido']); ?>
                     </div>
-                    
-                    <div class="info-item">
-                        <div class="info-label">Correo Electrónico</div>
-                        <div class="info-value">
-                            <?php echo htmlspecialchars($padre['correo_electronico']); ?>
-                        </div>
-                    </div>
-                    
-                    <div class="info-item">
-                        <div class="info-label">Teléfono</div>
-                        <div class="info-value">
-                            <?php echo htmlspecialchars($padre['telefono'] ?? 'No registrado'); ?>
-                        </div>
-                    </div>
-                    
-                    <div class="info-item">
-                        <div class="info-label">Ocupación</div>
-                        <div class="info-value">
-                            <?php echo htmlspecialchars($padre['ocupacion'] ?? 'No registrado'); ?>
-                        </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">Correo Electrónico</div>
+                    <div class="info-value">
+                        <?php echo htmlspecialchars($padre['correo_electronico']); ?>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <!-- Información de Contacto -->
-        <div class="card">
-            <div class="card-header">
-                <h2>📍 Información de Contacto</h2>
-            </div>
-            <div class="card-body">
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-label">Dirección</div>
-                        <div class="info-value">
-                            <?php echo htmlspecialchars($padre['direccion'] ?? 'No registrado'); ?>
-                        </div>
-                    </div>
-                    
-                    <div class="info-item">
-                        <div class="info-label">Ciudad</div>
-                        <div class="info-value">
-                            <?php echo htmlspecialchars($padre['ciudad'] ?? 'No registrado'); ?>
-                        </div>
-                    </div>
-                    
-                    <div class="info-item">
-                        <div class="info-label">Código Postal</div>
-                        <div class="info-value">
-                            <?php echo htmlspecialchars($padre['codigo_postal'] ?? 'No registrado'); ?>
-                        </div>
-                    </div>
-                    
-                    <div class="info-item">
-                        <div class="info-label">Fecha de Registro</div>
-                        <div class="info-value">
-                            <?php echo formatear_fecha($padre['fecha_registro'], true); ?>
-                        </div>
-                    </div>
+
+        <!-- HIJOS APROBADOS -->
+        <div class="card shadow">
+            <h2 class="item-title">👶 Hijos Inscritos y Aprobados</h2>
+
+            <?php if (count($hijos_aprobados) > 0): ?>
+
+                <div style="overflow-x:auto;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Edad</th>
+                                <th>Género</th>
+                                <th>Estado</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($hijos_aprobados as $hijo): ?>
+                                <tr>
+                                    <td>
+                                        <strong>
+                                            <?php echo htmlspecialchars($hijo['nombre'] . ' ' . $hijo['apellido']); ?>
+                                        </strong>
+                                    </td>
+                                    <td><?php echo $hijo['edad']; ?> años</td>
+                                    <td><?php echo ucfirst($hijo['genero']); ?></td>
+                                    <td>
+                                        <span class="badge badge-success">
+                                            Aprobado
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="../campistas/detalle.php?id=<?php echo $hijo['id_campista']; ?>" 
+                                           class="btn-secondary">
+                                            Ver Perfil
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 </div>
+
+            <?php else: ?>
+                <div class="empty-message">
+                    <div class="warning-icon">👶</div>
+                    <p>No se encontraron hijos con inscripción <strong>aprobada</strong>.</p>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- GESTIÓN DE CUENTA -->
+        <div class="card shadow">
+            <h2 class="item-title">⚙️ Gestión de Cuenta</h2>
+
+            <div class="button-group">
+
+                <a href="editar.php?id=<?php echo $id_padre; ?>" class="btn-login">
+                    ✏️ Editar Padre
+                </a>
+
+                <?php if ($padre['estado'] === ESTADO_ACTIVO): ?>
+                    <form method="POST" onsubmit="return confirm('¿Desactivar acceso de este padre?');">
+                        <input type="hidden" name="accion" value="desactivar">
+                        <button type="submit" class="btn-danger-confirm">
+                            🚫 Desactivar
+                        </button>
+                    </form>
+                <?php else: ?>
+                    <form method="POST">
+                        <input type="hidden" name="accion" value="activar">
+                        <button type="submit" class="btn-login">
+                            ✅ Activar
+                        </button>
+                    </form>
+                <?php endif; ?>
+
             </div>
         </div>
-        
-        <!-- Hijos Inscritos -->
-        <div class="card">
-            <div class="card-header">
-                <h2>👶 Hijos Inscritos</h2>
-            </div>
-            <div class="card-body">
-                <div class="empty-state">
-                    <p>Este padre aún no tiene hijos inscritos en el campamento</p>
-                    <p style="margin-top: 10px; color: #ccc;">La información aparecerá cuando se agreguen campistas</p>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Acciones -->
-        <div class="card">
-            <div class="card-header">
-                <h2>⚙️ Acciones</h2>
-            </div>
-            <div class="card-body">
-                <div class="actions-group">
-                    <a href="editar.php?id=<?php echo $id_padre; ?>" class="btn btn-primary">
-                        ✏️ Editar Información
-                    </a>
-                    
-                    <?php if ($padre['estado'] === ESTADO_ACTIVO): ?>
-                        <form method="POST" style="display: inline;" 
-                              onsubmit="return confirm('¿Estás seguro de desactivar este padre?');">
-                            <input type="hidden" name="accion" value="desactivar">
-                            <button type="submit" class="btn btn-danger">
-                                🚫 Desactivar Padre
-                            </button>
-                        </form>
-                    <?php else: ?>
-                        <form method="POST" style="display: inline;">
-                            <input type="hidden" name="accion" value="activar">
-                            <button type="submit" class="btn btn-success">
-                                ✅ Reactivar Padre
-                            </button>
-                        </form>
-                    <?php endif; ?>
-                    
-                    <a href="lista.php" class="btn btn-secondary">
-                        ← Volver a la lista
-                    </a>
-                </div>
-            </div>
-        </div>
+
     </div>
+
 </body>
 </html>
