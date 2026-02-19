@@ -358,7 +358,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <button type="submit" class="btn btn-primary">
                             💾 Guardar Cambios
                         </button>
-                        <a href="detalle.php?id=<?php echo $id_padre; ?>" class="btn btn-secondary">
+                        <a href="lista.php?id=<?php echo $id_padre; ?>" class="btn btn-secondary">
                             Cancelar
                         </a>
                     </div>

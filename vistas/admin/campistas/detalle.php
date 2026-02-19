@@ -1,23 +1,38 @@
 <?php
+/**
+ * ============================================
+ * VISTA: DETALLE Y ACCIONES DEL CAMPISTA
+ * EcoCampSystem 2026 - Panel Administrativo
+ * ============================================
+ */
 require_once __DIR__ . '/../../../config/constantes.php';
 require_once RUTA_UTILIDADES . '/sesion.php';
 require_once RUTA_UTILIDADES . '/funciones.php';
 require_once RUTA_CONTROLADORES . '/CampistaControlador.php';
 
-// Requerir autenticación de administrador
+// 1. SEGURIDAD: Solo administradores
+Sesion::iniciar();
 Sesion::requerirTipoUsuario(TIPO_ADMINISTRADOR);
 
-// Verificar ID
-if (!isset($_GET['id']) || !es_numero_valido($_GET['id'])) {
-    Sesion::establecerMensaje('error', 'ID de campista no válido.');
-    header('Location: lista.php');
+$id_campista = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+$controlador = new CampistaControlador();
+
+// 2. PROCESAR CAMBIO DE ESTADO (POST)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['accion'] === 'cambiar_estado') {
+    $nuevo_estado = $_POST['nuevo_estado'] ?? '';
+    $resultado = $controlador->cambiarEstado($id_campista, $nuevo_estado);
+    
+    if ($resultado['exito']) {
+        Sesion::establecerMensaje('exito', $resultado['mensaje']);
+    } else {
+        Sesion::establecerMensaje('error', $resultado['mensaje']);
+    }
+    // Recargar para ver cambios
+    header("Location: detalle.php?id=$id_campista");
     exit();
 }
 
-$id_campista = (int)$_GET['id'];
-
-// Obtener datos del campista
-$controlador = new CampistaControlador();
+// 3. OBTENER DATOS ACTUALIZADOS
 $campista = $controlador->obtenerPorId($id_campista);
 
 if (!$campista) {
@@ -26,372 +41,165 @@ if (!$campista) {
     exit();
 }
 
-// Procesar acciones (cambiar estado, eliminar)
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion'])) {
-    if ($_POST['accion'] === 'cambiar_estado' && isset($_POST['nuevo_estado'])) {
-        $resultado = $controlador->cambiarEstado($id_campista, $_POST['nuevo_estado']);
-        Sesion::establecerMensaje($resultado['exito'] ? 'exito' : 'error', $resultado['mensaje']);
-        header('Location: detalle.php?id=' . $id_campista);
-        exit();
-    } elseif ($_POST['accion'] === 'eliminar') {
-        $resultado = $controlador->eliminar($id_campista);
-        if ($resultado['exito']) {
-            Sesion::establecerMensaje('exito', $resultado['mensaje']);
-            header('Location: lista.php');
-            exit();
-        } else {
-            Sesion::establecerMensaje('error', $resultado['mensaje']);
-        }
-    }
-}
-
 $mensaje = Sesion::obtenerMensaje();
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detalle del Campista - <?php echo NOMBRE_SITIO; ?></title>
+    <title>Expediente: <?php echo htmlspecialchars(($campista['nombre'] ?? '') . ' ' . ($campista['apellido'] ?? '')); ?></title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; min-height: 100vh; }
+        :root { --primary: #4a69bd; --success: #48bb78; --warning: #f6ad55; --danger: #f56565; --dark: #2c3e50; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f7fafc; margin: 0; color: #2d3748; }
+        .header { background: var(--dark); color: white; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; }
+        .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
         
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px 40px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; overflow: hidden; border: 1px solid #e2e8f0; }
+        .card-header { padding: 15px 25px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+        .card-body { padding: 25px; }
+
+        /* Status Styling */
+        .badge { padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; }
+        .estado-aprobado { background: #c6f6d5; color: #22543d; }
+        .estado-pendiente { background: #feebc8; color: #744210; }
+        .estado-rechazado { background: #fed7d7; color: #822727; }
+
+        /* Form Controls */
+        .status-form { display: flex; gap: 10px; align-items: center; background: #ebf4ff; padding: 15px; border-radius: 8px; border: 1px solid #bee3f8; }
+        select { padding: 8px; border-radius: 6px; border: 1px solid #a0aec0; outline: none; }
+        .btn { padding: 9px 18px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; text-decoration: none; }
+        .btn-save { background: var(--primary); color: white; }
+        .btn-save:hover { background: #3c55a5; }
+
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+        .info-label { font-size: 0.75rem; color: #718096; text-transform: uppercase; font-weight: bold; margin-bottom: 4px; display: block; }
+        .info-value { font-size: 1rem; color: #1a202c; font-weight: 500; }
         
-        .header h1 { font-size: 1.5rem; }
-        .header a { color: white; text-decoration: none; padding: 8px 15px; border-radius: 6px; transition: all 0.3s; }
-        .header a:hover { background: rgba(255,255,255,0.2); }
-        
-        .container { max-width: 1200px; margin: 30px auto; padding: 0 30px; }
-        
-        .breadcrumb { color: #666; margin-bottom: 20px; font-size: 0.9rem; }
-        .breadcrumb a { color: #667eea; text-decoration: none; }
-        
-        .alert {
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        .alert-success { background: #efe; color: #3c3; border-left: 4px solid #3c3; }
-        .alert-error { background: #fee; color: #c33; border-left: 4px solid #c33; }
-        
-        .card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 25px;
-        }
-        
-        .card-header {
-            padding: 25px 30px;
-            border-bottom: 2px solid #f0f0f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .card-header h2 {
-            color: #333;
-            font-size: 1.8rem;
-        }
-        
-        .card-body {
-            padding: 30px;
-        }
-        
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-        }
-        
-        .info-item {
-            padding-bottom: 15px;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        
-        .info-item:last-child {
-            border-bottom: none;
-        }
-        
-        .info-label {
-            color: #666;
-            font-size: 0.9rem;
-            font-weight: 500;
-            margin-bottom: 5px;
-            text-transform: uppercase;
-        }
-        
-        .info-value {
-            color: #333;
-            font-size: 1.1rem;
-        }
-        
-        .estado-badge {
-            display: inline-block;
-            padding: 6px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-        
-        .estado-aprobado { background: #d4edda; color: #155724; }
-        .estado-pendiente { background: #fff3cd; color: #856404; }
-        .estado-rechazado { background: #f8d7da; color: #721c24; }
-        .estado-retirado { background: #e2e3e5; color: #383d41; }
-        
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-weight: 500;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            transition: all 0.3s;
-        }
-        
-        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-        .btn-secondary { background: #e0e0e0; color: #333; }
-        .btn-danger { background: #f56565; color: white; }
-        .btn-success { background: #48bb78; color: white; }
-        .btn-warning { background: #f6ad55; color: white; }
-        
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        
-        .actions-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .estado-selector {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-top: 15px;
-        }
-        
-        .estado-selector select {
-            padding: 8px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 0.95rem;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-        }
-        
-        @media (max-width: 768px) {
-            .info-grid { grid-template-columns: 1fr; }
-            .actions-group { flex-direction: column; }
-        }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 12px; background: #edf2f7; color: #4a5568; font-size: 0.8rem; }
+        td { padding: 12px; border-bottom: 1px solid #edf2f7; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>👦 Detalle del Campista</h1>
-        <a href="lista.php">← Volver a la lista</a>
-    </div>
-    
-    <div class="container">
-        <div class="breadcrumb">
-            <a href="<?php echo URL_BASE; ?>/panel.php">Inicio</a> / 
-            <a href="lista.php">Campistas</a> / 
-            <span>Detalle</span>
+
+<div class="header">
+    <h1>📋 Expediente del Campista</h1>
+    <a href="lista.php" style="color: white; text-decoration: none;">← Volver al Listado</a>
+</div>
+
+<div class="container">
+
+    <?php if ($mensaje): ?>
+        <div style="padding: 15px; background: <?php echo $mensaje['tipo'] === 'exito' ? '#c6f6d5' : '#fed7d7'; ?>; border-radius: 8px; margin-bottom: 20px; color: #2d3748; border: 1px solid rgba(0,0,0,0.1);">
+            <?php echo $mensaje['contenido']; ?>
         </div>
-        
-        <?php if ($mensaje): ?>
-            <div class="alert alert-<?php echo $mensaje['tipo'] === 'exito' ? 'success' : 'error'; ?>">
-                <?php echo $mensaje['contenido']; ?>
-            </div>
-        <?php endif; ?>
-        
-        <!-- Información del Campista -->
+    <?php endif; ?>
+
+    <div class="card" style="border-top: 4px solid var(--primary);">
+        <div class="card-header">
+            <h3>⚙️ Gestión de Inscripción</h3>
+            <span class="badge estado-<?php echo $campista['estado_inscripcion'] ?? 'pendiente'; ?>">
+                <?php echo strtoupper($campista['estado_inscripcion'] ?? 'pendiente'); ?>
+            </span>
+        </div>
+        <div class="card-body">
+            <form method="POST" class="status-form">
+                <input type="hidden" name="accion" value="cambiar_estado">
+                <label><strong>Cambiar estado actual:</strong></label>
+                <select name="nuevo_estado">
+                    <option value="pendiente" <?php echo ($campista['estado_inscripcion'] === 'pendiente') ? 'selected' : ''; ?>>Pendiente</option>
+                    <option value="aprobado" <?php echo ($campista['estado_inscripcion'] === 'aprobado') ? 'selected' : ''; ?>>Aprobado</option>
+                    <option value="rechazado" <?php echo ($campista['estado_inscripcion'] === 'rechazado') ? 'selected' : ''; ?>>Rechazado</option>
+                    <option value="retirado" <?php echo ($campista['estado_inscripcion'] === 'retirado') ? 'selected' : ''; ?>>Retirado</option>
+                </select>
+                <button type="submit" class="btn btn-save">Actualizar Estado</button>
+                <p style="margin: 0 0 0 10px; font-size: 0.85rem; color: #4a5568;">
+                    (Al aprobar, el padre podrá ver los formularios descargables)
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <div class="info-grid">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header"><h3>👤 Datos Personales</h3></div>
+            <div class="card-body">
+                <div style="margin-bottom: 15px;">
+                    <span class="info-label">Nombre del Niño</span>
+                    <span class="info-value"><?php echo htmlspecialchars(($campista['nombre'] ?? '') . ' ' . ($campista['apellido'] ?? '')); ?></span>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <span class="info-label">Edad / Género</span>
+                    <span class="info-value"><?php echo ($campista['edad'] ?? '0') . ' años / ' . ucfirst($campista['genero'] ?? 'N/A'); ?></span>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <span class="info-label">Padre Responsable</span>
+                    <span class="info-value"><?php echo htmlspecialchars(($campista['nombre_padre'] ?? '') . ' ' . ($campista['apellido_padre'] ?? '')); ?></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h3>🏥 Información Médica</h3></div>
+            <div class="card-body">
+                <div style="margin-bottom: 15px;">
+                    <span class="info-label">Tipo de Sangre</span>
+                    <span class="info-value" style="color: var(--danger);"><?php echo strtoupper($campista['tipo_sangre'] ?? 'No registrada'); ?></span>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <span class="info-label">Alergias Conocidas</span>
+                    <span class="info-value"><?php echo htmlspecialchars($campista['alergias'] ?? 'Ninguna'); ?></span>
+                </div>
                 <div>
-                    <h2><?php echo htmlspecialchars($campista['nombre'] . ' ' . $campista['apellido']); ?></h2>
-                    <p style="color: #666; margin-top: 5px;">ID: #<?php echo $campista['id_campista']; ?></p>
-                </div>
-                <span class="estado-badge estado-<?php echo $campista['estado_inscripcion']; ?>">
-                    <?php echo ucfirst($campista['estado_inscripcion']); ?>
-                </span>
-            </div>
-            <div class="card-body">
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-label">Fecha de Nacimiento</div>
-                        <div class="info-value">
-                            <?php echo formatear_fecha($campista['fecha_nacimiento']); ?>
-                        </div>
-                    </div>
-                    
-                    <div class="info-item">
-                        <div class="info-label">Edad</div>
-                        <div class="info-value">
-                            <?php echo $campista['edad']; ?> años
-                        </div>
-                    </div>
-                    
-                    <div class="info-item">
-                        <div class="info-label">Género</div>
-                        <div class="info-value">
-                            <?php echo ucfirst($campista['genero']); ?>
-                        </div>
-                    </div>
-                    
-                    <div class="info-item">
-                        <div class="info-label">Año de Inscripción</div>
-                        <div class="info-value">
-                            <?php echo $campista['anio_inscripcion']; ?>
-                        </div>
-                    </div>
-                    
-                    <div class="info-item">
-                        <div class="info-label">Fecha de Inscripción</div>
-                        <div class="info-value">
-                            <?php echo formatear_fecha($campista['fecha_inscripcion'], true); ?>
-                        </div>
-                    </div>
-                </div>
-                
-                <?php if (!empty($campista['notas_especiales'])): ?>
-                <div style="margin-top: 25px;">
-                    <div class="info-label">Notas Especiales</div>
-                    <div class="info-value" style="margin-top: 10px; line-height: 1.6;">
-                        <?php echo nl2br(htmlspecialchars($campista['notas_especiales'])); ?>
-                    </div>
-                </div>
-                <?php endif; ?>
-            </div>
-        </div>
-        
-        <!-- Información del Padre/Tutor -->
-        <div class="card">
-            <div class="card-header">
-                <h2>👨‍👩‍👧 Padre/Tutor Responsable</h2>
-            </div>
-            <div class="card-body">
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-label">Nombre Completo</div>
-                        <div class="info-value">
-                            <?php echo htmlspecialchars($campista['nombre_padre'] . ' ' . $campista['apellido_padre']); ?>
-                        </div>
-                    </div>
-                    
-                    <div class="info-item">
-                        <div class="info-label">Correo Electrónico</div>
-                        <div class="info-value">
-                            <a href="mailto:<?php echo htmlspecialchars($campista['correo_padre']); ?>" style="color: #667eea;">
-                                <?php echo htmlspecialchars($campista['correo_padre']); ?>
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <div class="info-item">
-                        <div class="info-label">Teléfono</div>
-                        <div class="info-value">
-                            <a href="tel:<?php echo htmlspecialchars($campista['telefono_padre']); ?>" style="color: #667eea;">
-                                <?php echo htmlspecialchars($campista['telefono_padre'] ?? 'No registrado'); ?>
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <div class="info-item">
-                        <div class="info-label">Ver Perfil</div>
-                        <div class="info-value">
-                            <a href="../padres/detalle.php?id=<?php echo $campista['id_padre']; ?>" class="btn btn-secondary" style="padding: 6px 15px; font-size: 0.9rem;">
-                                Ver Detalles del Padre
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Información Médica -->
-        <div class="card">
-            <div class="card-header">
-                <h2>🏥 Información Médica</h2>
-            </div>
-            <div class="card-body">
-                <div class="empty-state">
-                    <p>No se ha registrado información médica para este campista</p>
-                    <p style="margin-top: 10px; color: #ccc;">Esta funcionalidad estará disponible próximamente</p>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Cambiar Estado -->
-        <div class="card">
-            <div class="card-header">
-                <h2>🔄 Cambiar Estado de Inscripción</h2>
-            </div>
-            <div class="card-body">
-                <form method="POST" class="estado-selector">
-                    <input type="hidden" name="accion" value="cambiar_estado">
-                    <label for="nuevo_estado" style="font-weight: 500;">Seleccionar nuevo estado:</label>
-                    <select id="nuevo_estado" name="nuevo_estado">
-                        <option value="<?php echo INSCRIPCION_PENDIENTE; ?>" <?php echo $campista['estado_inscripcion'] === INSCRIPCION_PENDIENTE ? 'selected' : ''; ?>>
-                            Pendiente
-                        </option>
-                        <option value="<?php echo INSCRIPCION_APROBADO; ?>" <?php echo $campista['estado_inscripcion'] === INSCRIPCION_APROBADO ? 'selected' : ''; ?>>
-                            Aprobado
-                        </option>
-                        <option value="<?php echo INSCRIPCION_RECHAZADO; ?>" <?php echo $campista['estado_inscripcion'] === INSCRIPCION_RECHAZADO ? 'selected' : ''; ?>>
-                            Rechazado
-                        </option>
-                        <option value="<?php echo INSCRIPCION_RETIRADO; ?>" <?php echo $campista['estado_inscripcion'] === INSCRIPCION_RETIRADO ? 'selected' : ''; ?>>
-                            Retirado
-                        </option>
-                    </select>
-                    <button type="submit" class="btn btn-primary">
-                        Actualizar Estado
-                    </button>
-                </form>
-            </div>
-        </div>
-        
-        <!-- Acciones -->
-        <div class="card">
-            <div class="card-header">
-                <h2>⚙️ Acciones</h2>
-            </div>
-            <div class="card-body">
-                <div class="actions-group">
-                    <a href="editar.php?id=<?php echo $id_campista; ?>" class="btn btn-primary">
-                        ✏️ Editar Información
-                    </a>
-                    
-                    <form method="POST" style="display: inline;" 
-                          onsubmit="return confirm('¿Estás seguro de retirar a este campista? Esta acción cambiará su estado a RETIRADO.');">
-                        <input type="hidden" name="accion" value="eliminar">
-                        <button type="submit" class="btn btn-danger">
-                            🚫 Retirar Campista
-                        </button>
-                    </form>
-                    
-                    <a href="lista.php" class="btn btn-secondary">
-                        ← Volver a la lista
-                    </a>
+                    <span class="info-label">Observaciones</span>
+                    <span class="info-value"><?php echo htmlspecialchars($campista['notas_especiales'] ?? 'Sin notas'); ?></span>
                 </div>
             </div>
         </div>
     </div>
+
+    <div class="card">
+        <div class="card-header"><h3>📞 Contactos de Emergencia</h3></div>
+        <div class="card-body" style="padding: 0;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Relación</th>
+                        <th>Teléfono</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php 
+                    // Asumimos que el controlador ya trae los contactos en el objeto campista
+                    // Si no, se pueden cargar aquí con una consulta simple.
+                    $id = $campista['id_campista'];
+                    $db = (new Conexion())->obtenerConexion();
+                    $stmt = $db->prepare("SELECT * FROM informacion_emergencia WHERE id_campista = ?");
+                    $stmt->execute([$id]);
+                    $contactos = $stmt->fetchAll();
+
+                    if ($contactos): 
+                        foreach ($contactos as $con): ?>
+                        <tr>
+                            <td><strong><?php echo htmlspecialchars($con['nombre_contacto'] ?? ''); ?></strong></td>
+                            <td><?php echo htmlspecialchars($con['parentesco'] ?? 'Familiar'); ?></td>
+                            <td><a href="tel:<?php echo $con['telefono'] ?? ''; ?>" style="text-decoration: none; color: var(--primary); font-weight: bold;"><?php echo $con['telefono'] ?? ''; ?></a></td>
+                        </tr>
+                    <?php endforeach; 
+                    else: ?>
+                        <tr><td colspan="3" style="text-align: center; padding: 20px; color: #a0aec0;">No hay contactos de emergencia registrados.</td></tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div style="margin-top: 20px; display: flex; gap: 15px; justify-content: flex-end;">
+        <a href="imprimir_ficha.php?id=<?php echo $id_campista; ?>" target="_blank" class="btn" style="background: #718096; color: white;">🖨️ Imprimir Ficha</a>
+        <a href="editar.php?id=<?php echo $id_campista; ?>" class="btn" style="background: var(--warning); color: white;">✏️ Editar Información</a>
+    </div>
+
+</div>
 </body>
 </html>

@@ -1,14 +1,15 @@
 <?php
-require_once RUTA_CONFIG . '/conexion.php';
 /**
- * Clase Campista
- * Modelo para gestionar campistas
+ * ============================================
+ * MODELO: CAMPISTA (Versión Final Sincronizada)
+ * EcoCampSystem 2026 - Robinson Moya
+ * ============================================
  */
 class Campista {
-    private $conexion;
-    private $tabla = 'campistas';
     
-    // Propiedades
+    private $db;
+
+    // 1. PROPIEDADES DE LA TABLA 'campistas'
     public $id_campista;
     public $nombre;
     public $apellido;
@@ -16,259 +17,202 @@ class Campista {
     public $edad;
     public $genero;
     public $id_padre;
-    public $foto_perfil;
     public $notas_especiales;
     public $estado_inscripcion;
     public $anio_inscripcion;
     public $fecha_inscripcion;
     
+    // 2. PROPIEDADES DE RELACIÓN (JOINs)
+    // Declaradas para evitar "Deprecated: Creation of dynamic property"
+    public $nombre_padre;
+    public $apellido_padre;
+    public $tipo_sangre;
+    public $alergias;
+    public $condiciones_especiales;
+    public $medicamentos;
+    public $foto_perfil;
+
     /**
-     * Constructor
+     * CONSTRUCTOR: Inicializa la conexión PDO
      */
     public function __construct() {
         $database = new Conexion();
-        $this->conexion = $database->obtenerConexion();
+        $this->db = $database->obtenerConexion();
     }
-    
+
     /**
-     * Crea un nuevo campista
-     * @return bool|int ID del campista creado o false
+     * LISTAR TODOS
+     * Resuelve el error "Unknown column 'p.nombre'" uniendo la tabla usuarios
      */
-    public function crear() {
-        $consulta = "INSERT INTO " . $this->tabla . " 
-                    (nombre, apellido, fecha_nacimiento, edad, genero, id_padre, 
-                     foto_perfil, notas_especiales, estado_inscripcion, anio_inscripcion)
-                    VALUES (:nombre, :apellido, :fecha_nac, :edad, :genero, :id_padre,
-                            :foto, :notas, :estado, :anio)";
+    public function leerTodos($estado = null, $anio = null) {
+        $sql = "SELECT c.*, 
+                u.nombre AS nombre_padre, 
+                u.apellido AS apellido_padre 
+                FROM campistas c
+                LEFT JOIN padres p ON c.id_padre = p.id_padre
+                LEFT JOIN usuarios u ON p.id_usuario = u.id_usuario
+                WHERE 1=1";
         
-        $stmt = $this->conexion->prepare($consulta);
-        
-        // Limpiar datos
-        $this->nombre = htmlspecialchars(strip_tags($this->nombre));
-        $this->apellido = htmlspecialchars(strip_tags($this->apellido));
-        $this->notas_especiales = htmlspecialchars(strip_tags($this->notas_especiales));
-        
-        // Bind
-        $stmt->bindParam(':nombre', $this->nombre);
-        $stmt->bindParam(':apellido', $this->apellido);
-        $stmt->bindParam(':fecha_nac', $this->fecha_nacimiento);
-        $stmt->bindParam(':edad', $this->edad);
-        $stmt->bindParam(':genero', $this->genero);
-        $stmt->bindParam(':id_padre', $this->id_padre);
-        $stmt->bindParam(':foto', $this->foto_perfil);
-        $stmt->bindParam(':notas', $this->notas_especiales);
-        $stmt->bindParam(':estado', $this->estado_inscripcion);
-        $stmt->bindParam(':anio', $this->anio_inscripcion);
-        
-        if ($stmt->execute()) {
-            return $this->conexion->lastInsertId();
+        $params = [];
+        if ($estado) {
+            $sql .= " AND c.estado_inscripcion = :estado";
+            $params[':estado'] = $estado;
         }
-        
-        return false;
-    }
-    
-    /**
-     * Lee un campista por ID
-     * @return bool
-     */
-    public function leerPorId() {
-        $consulta = "SELECT * FROM " . $this->tabla . " WHERE id_campista = :id LIMIT 1";
-        
-        $stmt = $this->conexion->prepare($consulta);
-        $stmt->bindParam(':id', $this->id_campista);
-        $stmt->execute();
-        
-        $fila = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        if ($fila) {
-            $this->nombre = $fila['nombre'];
-            $this->apellido = $fila['apellido'];
-            $this->fecha_nacimiento = $fila['fecha_nacimiento'];
-            $this->edad = $fila['edad'];
-            $this->genero = $fila['genero'];
-            $this->id_padre = $fila['id_padre'];
-            $this->foto_perfil = $fila['foto_perfil'];
-            $this->notas_especiales = $fila['notas_especiales'];
-            $this->estado_inscripcion = $fila['estado_inscripcion'];
-            $this->anio_inscripcion = $fila['anio_inscripcion'];
-            $this->fecha_inscripcion = $fila['fecha_inscripcion'];
-            return true;
+        if ($anio) {
+            $sql .= " AND c.anio_inscripcion = :anio";
+            $params[':anio'] = $anio;
         }
+
+        $sql .= " ORDER BY c.id_campista DESC";
         
-        return false;
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            registrar_log("Error en leerTodos: " . $e->getMessage(), 'ERROR');
+            return [];
+        }
     }
-    
+
     /**
-     * Obtiene información completa del campista con datos del padre
-     * @return array|bool
+     * OBTENER INFORMACIÓN COMPLETA (JOIN Triple: Campista + Salud + Usuarios)
      */
     public function obtenerInformacionCompleta() {
-        $consulta = "SELECT c.*, 
-                     p.id_padre,
-                     u.nombre as nombre_padre,
-                     u.apellido as apellido_padre,
-                     u.correo_electronico as correo_padre,
-                     u.telefono as telefono_padre
-                     FROM " . $this->tabla . " c
-                     INNER JOIN padres p ON c.id_padre = p.id_padre
-                     INNER JOIN usuarios u ON p.id_usuario = u.id_usuario
-                     WHERE c.id_campista = :id";
+        $sql = "SELECT c.*, 
+                m.tipo_sangre, m.alergias, m.condiciones_especiales, m.medicamentos,
+                u.nombre AS nombre_padre, u.apellido AS apellido_padre
+                FROM campistas c
+                LEFT JOIN informacion_medica m ON c.id_campista = m.id_campista
+                LEFT JOIN padres p ON c.id_padre = p.id_padre
+                LEFT JOIN usuarios u ON p.id_usuario = u.id_usuario
+                WHERE c.id_campista = :id";
         
-        $stmt = $this->conexion->prepare($consulta);
-        $stmt->bindParam(':id', $this->id_campista);
-        $stmt->execute();
-        
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([':id' => $this->id_campista]);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            registrar_log("Error en obtenerInformacionCompleta: " . $e->getMessage(), 'ERROR');
+            return false;
+        }
     }
-    
+
     /**
-     * Actualiza un campista
-     * @return bool
+     * LEER POR ID (Carga de datos básicos en el objeto)
+     */
+    public function leerPorId() {
+        $sql = "SELECT * FROM campistas WHERE id_campista = :id LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':id' => $this->id_campista]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($row) {
+            foreach ($row as $key => $value) {
+                if (property_exists($this, $key)) {
+                    $this->$key = $value;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * ACTUALIZAR DATOS EN TABLA 'campistas'
      */
     public function actualizar() {
-        $consulta = "UPDATE " . $this->tabla . "
-                    SET nombre = :nombre,
-                        apellido = :apellido,
-                        fecha_nacimiento = :fecha_nac,
-                        edad = :edad,
-                        genero = :genero,
-                        foto_perfil = :foto,
-                        notas_especiales = :notas,
-                        estado_inscripcion = :estado
-                    WHERE id_campista = :id";
+        $sql = "UPDATE campistas SET 
+                nombre = :nom, 
+                apellido = :ape, 
+                fecha_nacimiento = :fec, 
+                genero = :gen, 
+                notas_especiales = :not 
+                WHERE id_campista = :id";
         
-        $stmt = $this->conexion->prepare($consulta);
-        
-        // Limpiar datos
-        $this->nombre = htmlspecialchars(strip_tags($this->nombre));
-        $this->apellido = htmlspecialchars(strip_tags($this->apellido));
-        $this->notas_especiales = htmlspecialchars(strip_tags($this->notas_especiales));
-        
-        // Bind
-        $stmt->bindParam(':nombre', $this->nombre);
-        $stmt->bindParam(':apellido', $this->apellido);
-        $stmt->bindParam(':fecha_nac', $this->fecha_nacimiento);
-        $stmt->bindParam(':edad', $this->edad);
-        $stmt->bindParam(':genero', $this->genero);
-        $stmt->bindParam(':foto', $this->foto_perfil);
-        $stmt->bindParam(':notas', $this->notas_especiales);
-        $stmt->bindParam(':estado', $this->estado_inscripcion);
-        $stmt->bindParam(':id', $this->id_campista);
-        
-        return $stmt->execute();
+        try {
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([
+                ':nom' => $this->nombre,
+                ':ape' => $this->apellido,
+                ':fec' => $this->fecha_nacimiento,
+                ':gen' => $this->genero,
+                ':not' => $this->notas_especiales,
+                ':id'  => $this->id_campista
+            ]);
+        } catch (PDOException $e) {
+            registrar_log("Error SQL en actualizar: " . $e->getMessage(), 'ERROR');
+            return false;
+        }
     }
-    
+
     /**
-     * Obtiene todos los campistas con información de padre
-     * @param string $estado_inscripcion Filtrar por estado
-     * @param int $anio Filtrar por año
-     * @return array
+     * CREAR NUEVO REGISTRO
      */
-    public function leerTodos($estado_inscripcion = null, $anio = null) {
-        $consulta = "SELECT c.*,
-                     u.nombre as nombre_padre,
-                     u.apellido as apellido_padre,
-                     u.correo_electronico as correo_padre
-                     FROM " . $this->tabla . " c
-                     INNER JOIN padres p ON c.id_padre = p.id_padre
-                     INNER JOIN usuarios u ON p.id_usuario = u.id_usuario
-                     WHERE 1=1";
+    public function crear() {
+        $sql = "INSERT INTO campistas (nombre, apellido, fecha_nacimiento, edad, genero, id_padre, notas_especiales, estado_inscripcion, anio_inscripcion) 
+                VALUES (:nom, :ape, :fec, :eda, :gen, :idp, :not, :est, :ani)";
         
-        if ($estado_inscripcion) {
-            $consulta .= " AND c.estado_inscripcion = :estado";
+        try {
+            $stmt = $this->db->prepare($sql);
+            $res = $stmt->execute([
+                ':nom' => $this->nombre,
+                ':ape' => $this->apellido,
+                ':fec' => $this->fecha_nacimiento,
+                ':eda' => $this->edad,
+                ':gen' => $this->genero,
+                ':idp' => $this->id_padre,
+                ':not' => $this->notas_especiales,
+                ':est' => $this->estado_inscripcion,
+                ':ani' => $this->anio_inscripcion
+            ]);
+
+            return $res ? $this->db->lastInsertId() : false;
+        } catch (PDOException $e) {
+            registrar_log("Error al crear campista: " . $e->getMessage(), 'ERROR');
+            return false;
         }
-        
-        if ($anio) {
-            $consulta .= " AND c.anio_inscripcion = :anio";
-        }
-        
-        $consulta .= " ORDER BY c.fecha_inscripcion DESC";
-        
-        $stmt = $this->conexion->prepare($consulta);
-        
-        if ($estado_inscripcion) {
-            $stmt->bindParam(':estado', $estado_inscripcion);
-        }
-        
-        if ($anio) {
-            $stmt->bindParam(':anio', $anio);
-        }
-        
-        $stmt->execute();
-        
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    
+
     /**
-     * Obtiene campistas de un padre específico
-     * @param int $id_padre ID del padre
-     * @return array
-     */
-    public function leerPorPadre($id_padre) {
-        $consulta = "SELECT * FROM " . $this->tabla . " 
-                    WHERE id_padre = :id_padre
-                    ORDER BY fecha_inscripcion DESC";
-        
-        $stmt = $this->conexion->prepare($consulta);
-        $stmt->bindParam(':id_padre', $id_padre);
-        $stmt->execute();
-        
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-    
-    /**
-     * Elimina un campista (soft delete - cambiar estado)
-     * @return bool
-     */
-    public function eliminar() {
-        $consulta = "UPDATE " . $this->tabla . "
-                    SET estado_inscripcion = 'retirado'
-                    WHERE id_campista = :id";
-        
-        $stmt = $this->conexion->prepare($consulta);
-        $stmt->bindParam(':id', $this->id_campista);
-        
-        return $stmt->execute();
-    }
-    
-    /**
-     * Cuenta campistas por estado
-     * @return array
+     * CONTAR POR ESTADO (Para Estadísticas)
      */
     public function contarPorEstado() {
-        $consulta = "SELECT estado_inscripcion, COUNT(*) as total
-                    FROM " . $this->tabla . "
-                    WHERE anio_inscripcion = YEAR(CURDATE())
-                    GROUP BY estado_inscripcion";
-        
-        $stmt = $this->conexion->prepare($consulta);
+        $sql = "SELECT estado_inscripcion, COUNT(*) as total 
+                FROM campistas 
+                GROUP BY estado_inscripcion";
+        $stmt = $this->db->prepare($sql);
         $stmt->execute();
-        
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    
+
     /**
-     * Busca campistas por término
-     * @param string $termino Término de búsqueda
-     * @return array
+     * BUSCADOR INTEGRAL
      */
     public function buscar($termino) {
-        $consulta = "SELECT c.*,
-                     u.nombre as nombre_padre,
-                     u.apellido as apellido_padre
-                     FROM " . $this->tabla . " c
-                     INNER JOIN padres p ON c.id_padre = p.id_padre
-                     INNER JOIN usuarios u ON p.id_usuario = u.id_usuario
-                     WHERE CONCAT(c.nombre, ' ', c.apellido) LIKE :termino
-                     OR CONCAT(u.nombre, ' ', u.apellido) LIKE :termino
-                     ORDER BY c.fecha_inscripcion DESC";
+        $sql = "SELECT c.*, u.nombre AS nombre_padre, u.apellido AS apellido_padre 
+                FROM campistas c
+                LEFT JOIN padres p ON c.id_padre = p.id_padre
+                LEFT JOIN usuarios u ON p.id_usuario = u.id_usuario
+                WHERE c.nombre LIKE :term 
+                   OR c.apellido LIKE :term 
+                   OR u.nombre LIKE :term 
+                   OR c.id_campista = :id";
         
-        $stmt = $this->conexion->prepare($consulta);
-        $busqueda = "%$termino%";
-        $stmt->bindParam(':termino', $busqueda);
-        $stmt->execute();
-        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            ':term' => "%$termino%",
+            ':id'   => (int)$termino
+        ]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    /**
+     * ELIMINAR REGISTRO
+     */
+    public function eliminar() {
+        $sql = "DELETE FROM campistas WHERE id_campista = :id";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([':id' => $this->id_campista]);
+    }
 }
-?>

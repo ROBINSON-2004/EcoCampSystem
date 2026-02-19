@@ -1,222 +1,27 @@
 <?php
+/**
+ * ============================================
+ * CONTROLADOR: CAMPISTAS (VERSIÓN MAESTRA 2026)
+ * EcoCampSystem - Robinson Moya
+ * Sincronizado para Pujilí, Cotopaxi
+ * ============================================
+ */
 require_once __DIR__ . '/../config/constantes.php';
 require_once RUTA_UTILIDADES . '/funciones.php';
 require_once RUTA_MODELOS . '/Campista.php';
+require_once RUTA_CONFIG . '/conexion.php';
 
-/**
- * Controlador de Campistas
- * Gestiona todas las operaciones CRUD de campistas
- */
 class CampistaControlador {
     
-    /**
-     * Obtiene todos los campistas
-     * @param string $estado Filtrar por estado
-     * @param int $anio Filtrar por año
-     * @return array Lista de campistas
-     */
-    public function listarTodos($estado = null, $anio = null) {
-        $campista_modelo = new Campista();
-        return $campista_modelo->leerTodos($estado, $anio);
+    private $db;
+
+    public function __construct() {
+        $database = new Conexion();
+        $this->db = $database->obtenerConexion();
     }
-    
+
     /**
-     * Obtiene un campista por ID
-     * @param int $id_campista ID del campista
-     * @return array|bool Datos del campista o false
-     */
-    public function obtenerPorId($id_campista) {
-        $campista_modelo = new Campista();
-        $campista_modelo->id_campista = $id_campista;
-        
-        if ($campista_modelo->leerPorId()) {
-            return $campista_modelo->obtenerInformacionCompleta();
-        }
-        
-        return false;
-    }
-    
-    /**
-     * Crea un nuevo campista
-     * @param array $datos Datos del formulario
-     * @return array Respuesta con éxito y mensaje
-     */
-    public function crear($datos) {
-        // Validar datos requeridos
-        $campos_requeridos = ['nombre', 'apellido', 'fecha_nacimiento', 'genero', 'id_padre'];
-        
-        foreach ($campos_requeridos as $campo) {
-            if (empty($datos[$campo])) {
-                return [
-                    'exito' => false,
-                    'mensaje' => 'Por favor completa todos los campos obligatorios.'
-                ];
-            }
-        }
-        
-        // Validar fecha de nacimiento
-        if (!validar_fecha($datos['fecha_nacimiento'])) {
-            return [
-                'exito' => false,
-                'mensaje' => 'La fecha de nacimiento no es válida.'
-            ];
-        }
-        
-        // Calcular edad
-        $edad = calcular_edad($datos['fecha_nacimiento']);
-        
-        try {
-            $campista_modelo = new Campista();
-            $campista_modelo->nombre = limpiar_cadena($datos['nombre']);
-            $campista_modelo->apellido = limpiar_cadena($datos['apellido']);
-            $campista_modelo->fecha_nacimiento = $datos['fecha_nacimiento'];
-            $campista_modelo->edad = $edad;
-            $campista_modelo->genero = $datos['genero'];
-            $campista_modelo->id_padre = $datos['id_padre'];
-            $campista_modelo->foto_perfil = $datos['foto_perfil'] ?? null;
-            $campista_modelo->notas_especiales = !empty($datos['notas_especiales']) ? limpiar_cadena($datos['notas_especiales']) : null;
-            $campista_modelo->estado_inscripcion = $datos['estado_inscripcion'] ?? INSCRIPCION_PENDIENTE;
-            $campista_modelo->anio_inscripcion = $datos['anio_inscripcion'] ?? ANIO_CAMPAMENTO_ACTUAL;
-            
-            $id_campista = $campista_modelo->crear();
-            
-            if ($id_campista) {
-                registrar_log("Campista creado: ID $id_campista", 'INFO');
-                
-                return [
-                    'exito' => true,
-                    'mensaje' => 'Campista registrado correctamente.',
-                    'id_campista' => $id_campista
-                ];
-            }
-            
-        } catch (Exception $e) {
-            registrar_log("Error al crear campista: " . $e->getMessage(), 'ERROR');
-        }
-        
-        return [
-            'exito' => false,
-            'mensaje' => MSG_ERROR_GENERAL
-        ];
-    }
-    
-    /**
-     * Actualiza un campista
-     * @param array $datos Datos del formulario
-     * @return array Respuesta con éxito y mensaje
-     */
-    public function actualizar($datos) {
-        // Validar datos requeridos
-        if (empty($datos['id_campista'])) {
-            return [
-                'exito' => false,
-                'mensaje' => 'ID de campista no válido.'
-            ];
-        }
-        
-        // Validar campos obligatorios
-        if (empty($datos['nombre']) || empty($datos['apellido']) || empty($datos['fecha_nacimiento'])) {
-            return [
-                'exito' => false,
-                'mensaje' => 'El nombre, apellido y fecha de nacimiento son obligatorios.'
-            ];
-        }
-        
-        // Validar fecha de nacimiento
-        if (!validar_fecha($datos['fecha_nacimiento'])) {
-            return [
-                'exito' => false,
-                'mensaje' => 'La fecha de nacimiento no es válida.'
-            ];
-        }
-        
-        // Calcular edad
-        $edad = calcular_edad($datos['fecha_nacimiento']);
-        
-        try {
-            $campista_modelo = new Campista();
-            $campista_modelo->id_campista = $datos['id_campista'];
-            $campista_modelo->nombre = limpiar_cadena($datos['nombre']);
-            $campista_modelo->apellido = limpiar_cadena($datos['apellido']);
-            $campista_modelo->fecha_nacimiento = $datos['fecha_nacimiento'];
-            $campista_modelo->edad = $edad;
-            $campista_modelo->genero = $datos['genero'];
-            $campista_modelo->foto_perfil = $datos['foto_perfil'] ?? null;
-            $campista_modelo->notas_especiales = !empty($datos['notas_especiales']) ? limpiar_cadena($datos['notas_especiales']) : null;
-            $campista_modelo->estado_inscripcion = $datos['estado_inscripcion'] ?? INSCRIPCION_PENDIENTE;
-            
-            if ($campista_modelo->actualizar()) {
-                registrar_log("Campista actualizado: ID {$datos['id_campista']}", 'INFO');
-                
-                return [
-                    'exito' => true,
-                    'mensaje' => MSG_EXITO_ACTUALIZAR
-                ];
-            }
-            
-        } catch (Exception $e) {
-            registrar_log("Error al actualizar campista: " . $e->getMessage(), 'ERROR');
-        }
-        
-        return [
-            'exito' => false,
-            'mensaje' => MSG_ERROR_GENERAL
-        ];
-    }
-    
-    /**
-     * Elimina un campista (soft delete)
-     * @param int $id_campista ID del campista
-     * @return array Respuesta con éxito y mensaje
-     */
-    public function eliminar($id_campista) {
-        if (empty($id_campista)) {
-            return [
-                'exito' => false,
-                'mensaje' => 'ID de campista no válido.'
-            ];
-        }
-        
-        try {
-            $campista_modelo = new Campista();
-            $campista_modelo->id_campista = $id_campista;
-            
-            if ($campista_modelo->eliminar()) {
-                registrar_log("Campista eliminado: ID $id_campista", 'INFO');
-                
-                return [
-                    'exito' => true,
-                    'mensaje' => 'El campista ha sido retirado correctamente.'
-                ];
-            }
-            
-        } catch (Exception $e) {
-            registrar_log("Error al eliminar campista: " . $e->getMessage(), 'ERROR');
-        }
-        
-        return [
-            'exito' => false,
-            'mensaje' => MSG_ERROR_GENERAL
-        ];
-    }
-    
-    /**
-     * Busca campistas por término
-     * @param string $termino Término de búsqueda
-     * @return array Lista de campistas filtrados
-     */
-    public function buscar($termino) {
-        if (empty($termino)) {
-            return $this->listarTodos();
-        }
-        
-        $campista_modelo = new Campista();
-        return $campista_modelo->buscar($termino);
-    }
-    
-    /**
-     * Obtiene estadísticas de campistas
-     * @return array Estadísticas
+     * OBTENER ESTADÍSTICAS (Resuelve error Fatal en lista.php)
      */
     public function obtenerEstadisticas() {
         $campista_modelo = new Campista();
@@ -230,69 +35,170 @@ class CampistaControlador {
             'retirados' => 0
         ];
         
-        foreach ($por_estado as $estado) {
-            $stats['total'] += $estado['total'];
-            
-            switch ($estado['estado_inscripcion']) {
-                case INSCRIPCION_APROBADO:
-                    $stats['aprobados'] = $estado['total'];
-                    break;
-                case INSCRIPCION_PENDIENTE:
-                    $stats['pendientes'] = $estado['total'];
-                    break;
-                case INSCRIPCION_RECHAZADO:
-                    $stats['rechazados'] = $estado['total'];
-                    break;
-                case INSCRIPCION_RETIRADO:
-                    $stats['retirados'] = $estado['total'];
-                    break;
-            }
-        }
-        
-        return $stats;
-    }
-    
-    /**
-     * Cambia el estado de inscripción de un campista
-     * @param int $id_campista ID del campista
-     * @param string $nuevo_estado Nuevo estado
-     * @return array Respuesta
-     */
-    public function cambiarEstado($id_campista, $nuevo_estado) {
-        $estados_validos = [INSCRIPCION_PENDIENTE, INSCRIPCION_APROBADO, INSCRIPCION_RECHAZADO, INSCRIPCION_RETIRADO];
-        
-        if (!in_array($nuevo_estado, $estados_validos)) {
-            return [
-                'exito' => false,
-                'mensaje' => 'Estado no válido.'
-            ];
-        }
-        
-        try {
-            $campista_modelo = new Campista();
-            $campista_modelo->id_campista = $id_campista;
-            
-            if ($campista_modelo->leerPorId()) {
-                $campista_modelo->estado_inscripcion = $nuevo_estado;
+        if ($por_estado) {
+            foreach ($por_estado as $estado) {
+                $count = (int)$estado['total'];
+                $stats['total'] += $count;
                 
-                if ($campista_modelo->actualizar()) {
-                    registrar_log("Estado de campista cambiado: ID $id_campista a $nuevo_estado", 'INFO');
-                    
-                    return [
-                        'exito' => true,
-                        'mensaje' => 'Estado actualizado correctamente.'
-                    ];
+                switch ($estado['estado_inscripcion']) {
+                    case INSCRIPCION_APROBADO: $stats['aprobados'] = $count; break;
+                    case INSCRIPCION_PENDIENTE: $stats['pendientes'] = $count; break;
+                    case INSCRIPCION_RECHAZADO: $stats['rechazados'] = $count; break;
+                    case INSCRIPCION_RETIRADO: $stats['retirados'] = $count; break;
                 }
             }
-            
-        } catch (Exception $e) {
-            registrar_log("Error al cambiar estado: " . $e->getMessage(), 'ERROR');
         }
-        
-        return [
-            'exito' => false,
-            'mensaje' => MSG_ERROR_GENERAL
-        ];
+        return $stats;
+    }
+
+    /**
+     * LISTAR TODOS LOS CAMPISTAS
+     */
+    public function listarTodos($estado = null, $anio = null) {
+        return (new Campista())->leerTodos($estado, $anio);
+    }
+
+    /**
+     * BUSCAR CAMPISTAS POR NOMBRE O ID
+     */
+    public function buscar($termino) {
+        if (empty($termino)) return $this->listarTodos();
+        return (new Campista())->buscar($termino);
+    }
+
+    /**
+     * OBTENER POR ID (Perfil Integral)
+     */
+    public function obtenerPorId($id_campista) {
+        $modelo = new Campista();
+        $modelo->id_campista = (int)$id_campista;
+        if ($modelo->leerPorId()) {
+            return $modelo->obtenerInformacionCompleta();
+        }
+        return false;
+    }
+
+    /**
+     * CAMBIAR ESTADO (Actualización Quirúrgica)
+     * Resuelve el fallo de actualización de Pendiente a Aprobado.
+     */
+    public function cambiarEstado($id_campista, $nuevo_estado) {
+        try {
+            $sql = "UPDATE campistas SET estado_inscripcion = :estado WHERE id_campista = :id";
+            $stmt = $this->db->prepare($sql);
+            $res = $stmt->execute([
+                ':estado' => $nuevo_estado,
+                ':id'     => (int)$id_campista
+            ]);
+
+            if ($res) {
+                registrar_log("Cambio de estado exitoso: ID $id_campista a $nuevo_estado", 'INFO');
+                return ['exito' => true, 'mensaje' => 'Estado actualizado a ' . strtoupper($nuevo_estado)];
+            }
+        } catch (Exception $e) {
+            registrar_log("Error en cambiarEstado: " . $e->getMessage(), 'ERROR');
+            return ['exito' => false, 'mensaje' => $e->getMessage()];
+        }
+        return ['exito' => false, 'mensaje' => 'No se pudo procesar el cambio.'];
+    }
+
+    /**
+     * ACTUALIZAR EXPEDIENTE (Básico + Salud + Emergencia)
+     * Procesa tres tablas en una sola transacción segura.
+     */
+    public function actualizar($datos) {
+        if (empty($datos['id_campista'])) return ['exito' => false, 'mensaje' => 'ID no válido.'];
+
+        try {
+            $this->db->beginTransaction();
+
+            // 1. Datos Básicos
+            $campista = new Campista();
+            $campista->id_campista = (int)$datos['id_campista'];
+            $campista->nombre = limpiar_cadena($datos['nombre'] ?? '');
+            $campista->apellido = limpiar_cadena($datos['apellido'] ?? '');
+            $campista->fecha_nacimiento = $datos['fecha_nacimiento'] ?? '';
+            $campista->genero = $datos['genero'] ?? '';
+            $campista->notas_especiales = limpiar_cadena($datos['notas_especiales'] ?? '');
+            
+            if (!$campista->actualizar()) throw new Exception("Error al actualizar tabla principal.");
+
+            // 2. Información Médica
+            if (isset($datos['tipo_sangre'])) {
+                $sql_m = "UPDATE informacion_medica SET 
+                          tipo_sangre = ?, alergias = ?, condiciones_especiales = ?, medicamentos = ? 
+                          WHERE id_campista = ?";
+                $this->db->prepare($sql_m)->execute([
+                    $datos['tipo_sangre'],
+                    limpiar_cadena($datos['alergias'] ?? 'Ninguna'),
+                    limpiar_cadena($datos['condiciones_especiales'] ?? ''),
+                    limpiar_cadena($datos['medicamentos'] ?? ''),
+                    $datos['id_campista']
+                ]);
+            }
+
+            // 3. Contactos de Emergencia
+            if (isset($datos['emergencia_nombre'])) {
+                // Limpiar anteriores para sincronizar
+                $this->db->prepare("DELETE FROM informacion_emergencia WHERE id_campista = ?")->execute([$datos['id_campista']]);
+                
+                $sql_e = "INSERT INTO informacion_emergencia (id_campista, nombre_contacto, parentesco, telefono) VALUES (?, ?, ?, ?)";
+                $stmt_e = $this->db->prepare($sql_e);
+                
+                foreach ($datos['emergencia_nombre'] as $i => $nombre) {
+                    if (!empty($nombre)) {
+                        $stmt_e->execute([
+                            $datos['id_campista'], 
+                            limpiar_cadena($nombre), 
+                            limpiar_cadena($datos['emergencia_parentesco'][$i] ?? 'Familiar'), 
+                            limpiar_cadena($datos['emergencia_telefono'][$i] ?? '000')
+                        ]);
+                    }
+                }
+            }
+
+            $this->db->commit();
+            return ['exito' => true];
+
+        } catch (Exception $e) {
+            if ($this->db->inTransaction()) $this->db->rollBack();
+            return ['exito' => false, 'mensaje' => "Error técnico: " . $e->getMessage()];
+        }
+    }
+
+    /**
+     * CREAR CAMPISTA (Registro Inicial)
+     */
+    public function crear($datos) {
+        try {
+            $this->db->beginTransaction();
+            $campista = new Campista();
+            $campista->nombre = limpiar_cadena($datos['nombre'] ?? '');
+            $campista->apellido = limpiar_cadena($datos['apellido'] ?? '');
+            $campista->fecha_nacimiento = $datos['fecha_nacimiento'] ?? '';
+            $campista->edad = calcular_edad($datos['fecha_nacimiento'] ?? 'now');
+            $campista->genero = $datos['genero'] ?? '';
+            $campista->id_padre = (int)($datos['id_padre'] ?? 0);
+            $campista->estado_inscripcion = INSCRIPCION_PENDIENTE;
+            $campista->anio_inscripcion = ANIO_CAMPAMENTO_ACTUAL;
+
+            $id_campista = $campista->crear();
+
+            if ($id_campista) {
+                $this->db->prepare("INSERT INTO informacion_medica (id_campista, tipo_sangre) VALUES (?, 'S/N')")->execute([$id_campista]);
+                $this->db->commit();
+                return ['exito' => true, 'id_campista' => $id_campista];
+            }
+        } catch (Exception $e) {
+            if ($this->db->inTransaction()) $this->db->rollBack();
+            return ['exito' => false, 'mensaje' => $e->getMessage()];
+        }
+        return ['exito' => false, 'mensaje' => 'Error desconocido.'];
+    }
+
+    public function eliminar($id) {
+        $modelo = new Campista();
+        $modelo->id_campista = (int)$id;
+        return $modelo->eliminar() ? ['exito' => true] : ['exito' => false];
     }
 }
-?>

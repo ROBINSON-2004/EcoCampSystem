@@ -358,3 +358,86 @@
 [2026-02-12 11:43:22] [ERROR] Error SQL en enviarMasiva: SQLSTATE[01000]: Warning: 1265 Data truncated for column 'tipo_notificacion' at row 1
 [2026-02-12 11:47:57] [INFO]  Robinson Moya envió notificación masiva ID: 1
 [2026-02-12 11:51:46] [INFO] Inicio de sesión exitoso: kelly@gmail.com
+[2026-02-12 12:50:11] [INFO]  Robinson Moya envió notificación masiva ID: 2
+[2026-02-12 12:56:40] [INFO] Padre actualizado: ID 3
+[2026-02-12 12:56:55] [INFO] Padre desactivado: ID Usuario 4
+[2026-02-12 12:56:58] [INFO] Padre reactivado: ID Usuario 4
+[2026-02-12 12:57:29] [INFO] Padre actualizado: ID 4
+[2026-02-12 13:00:12] [INFO] Campista creado: ID 12
+[2026-02-12 13:00:33] [INFO] Campista actualizado: ID 12
+[2026-02-12 13:33:30] [INFO] Cierre de sesión: kelly@gmail.com
+[2026-02-12 13:33:42] [INFO] Inicio de sesión exitoso: jennifer@gmail.com
+[2026-02-12 13:34:35] [INFO] Campista creado: ID 13
+[2026-02-12 13:37:08] [INFO] Campista creado: ID 14
+[2026-02-12 13:52:15] [INFO] Estado de campista cambiado: ID 14 a aprobado
+[2026-02-12 14:04:22] [INFO] Campista actualizado: ID 8
+[2026-02-12 14:05:54] [INFO] Campista actualizado: ID 14
+[2026-02-12 14:08:45] [INFO] Campista creado: ID 15
+[2026-02-12 14:10:31] [ERROR] Error crítico en Ficha Médica: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'parentesco' in 'field list'
+[2026-02-12 14:11:03] [INFO] Estado de campista cambiado: ID 15 a aprobado
+[2026-02-12 14:16:25] [INFO] Estado de campista cambiado: ID 15 a aprobado
+[2026-02-12 14:16:54] [INFO] Campista actualizado: ID 15
+[2026-02-12 14:39:39] [ERROR] Error en actualización integral: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'parentesco' in 'field list'
+[2026-02-12 14:41:20] [ERROR] Error en actualización integral: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'telefono' in 'field list'
+[2026-02-12 14:41:26] [ERROR] Error en actualización integral: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'telefono' in 'field list'
+[2026-02-12 14:41:29] [ERROR] Error en actualización integral: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'telefono' in 'field list'
+[2026-02-12 14:42:20] [ERROR] Error en actualización integral: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'telefono' in 'field list'
+[2026-02-12 14:43:33] [ERROR] Error crítico en Ficha Médica: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'telefono' in 'field list'
+[2026-02-12 14:44:25] [ERROR] Error en actualización integral: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'telefono' in 'field list'
+[2026-02-12 14:46:32] [ERROR] Error en actualización integral: SQLSTATE[HY000]: General error: 1364 Field 'relacion' doesn't have a default value
+[2026-02-12 14:46:41] [ERROR] Error en actualización integral: SQLSTATE[HY000]: General error: 1364 Field 'relacion' doesn't have a default value
+[2026-02-12 14:53:38] [ERROR] Error en actualización integral: SQLSTATE[HY000]: General error: 1364 Field 'telefono_principal' doesn't have a default value
+[2026-02-12 14:58:18] [ERROR] Error en actualización integral: SQLSTATE[HY000]: General error: 1364 Field 'telefono_principal' doesn't have a default value
+[2026-02-12 14:59:24] [INFO] Actualización integral exitosa: ID 8
+[2026-02-12 15:12:23] [INFO] Actualización integral exitosa para ID 8
+[2026-02-12 15:16:44] [INFO]  Robinson Moya envió notificación masiva ID: 3
+[2026-02-12 15:18:56] [INFO] Actualización integral exitosa para ID 15
+[2026-02-18 18:10:29] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-02-18 18:17:39] [INFO] Actualización integral exitosa para ID 13
+[2026-02-18 18:26:11] [INFO] Actualización integral exitosa para ID 7
+[2026-02-18 18:26:44] [INFO] Actualización integral exitosa para ID 15
+[2026-02-18 18:35:40] [INFO] Estado actualizado: ID 15 a aprobado
+[2026-02-18 18:36:04] [INFO] Estado actualizado: ID 15 a aprobado
+[2026-02-18 18:36:36] [INFO] Estado actualizado: ID 14 a aprobado
+[2026-02-18 18:44:11] [INFO] Padre actualizado: ID 4
+[2026-02-18 14:02:51] [INFO] Estado actualizado: ID 15 a aprobado
+[2026-02-18 14:08:40] [ERROR] Error SQL en obtenerInformacionCompleta: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.nombre' in 'field list'
+[2026-02-18 14:16:30] [ERROR] Error en Campista->leerTodos: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.nombre' in 'field list'
+[2026-02-18 14:16:35] [ERROR] Error en Campista->leerTodos: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.nombre' in 'field list'
+[2026-02-18 14:16:44] [ERROR] Error en Campista->leerTodos: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.nombre' in 'field list'
+[2026-02-18 14:16:49] [ERROR] Error en Campista->leerTodos: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.nombre' in 'field list'
+[2026-02-18 14:18:31] [ERROR] Error en Campista->leerTodos: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.nombre' in 'field list'
+[2026-02-18 14:18:34] [ERROR] Error en Campista->leerTodos: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.nombre' in 'field list'
+[2026-02-18 14:18:53] [ERROR] Error en Campista->leerTodos: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.nombre' in 'field list'
+[2026-02-18 14:18:55] [ERROR] Error en Campista->leerTodos: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.nombre' in 'field list'
+[2026-02-18 14:19:00] [ERROR] Error en Campista->leerTodos: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.nombre' in 'field list'
+[2026-02-18 14:20:07] [ERROR] Error en Campista->leerTodos: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.nombre' in 'field list'
+[2026-02-18 14:20:08] [ERROR] Error en Campista->leerTodos: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.nombre' in 'field list'
+[2026-02-18 14:20:08] [ERROR] Error en Campista->leerTodos: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.nombre' in 'field list'
+[2026-02-18 14:20:09] [ERROR] Error en Campista->leerTodos: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.nombre' in 'field list'
+[2026-02-18 14:42:25] [ERROR] Error en Campista->leerTodos: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.nombre' in 'field list'
+[2026-02-18 14:42:26] [ERROR] Error en Campista->leerTodos: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.nombre' in 'field list'
+[2026-02-18 14:42:49] [ERROR] Error en Campista->leerTodos: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.nombre' in 'field list'
+[2026-02-18 14:44:03] [ERROR] Error en leerTodos: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.nombre' in 'field list'
+[2026-02-18 14:44:04] [ERROR] Error en leerTodos: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.nombre' in 'field list'
+[2026-02-18 14:44:07] [ERROR] Error en leerTodos: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.nombre' in 'field list'
+[2026-02-18 14:44:12] [ERROR] Error en leerTodos: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.nombre' in 'field list'
+[2026-02-18 20:16:36] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-02-18 20:17:42] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-02-18 20:18:42] [INFO] Padre actualizado: ID 4
+[2026-02-18 20:20:29] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-02-18 20:21:19] [INFO] Padre actualizado: ID 4
+[2026-02-18 20:22:00] [INFO] Padre actualizado: ID 4
+[2026-02-18 20:23:52] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-02-18 20:24:54] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-02-18 20:25:13] [INFO] Padre actualizado: ID 4
+[2026-02-18 20:26:32] [INFO] Padre reactivado: ID Usuario 4
+[2026-02-18 20:26:38] [INFO] Padre actualizado: ID 3
+[2026-02-18 20:27:06] [INFO] Padre reactivado: ID Usuario 4
+[2026-02-18 20:27:11] [INFO] Padre actualizado: ID 3
+[2026-02-18 20:27:24] [INFO] Cierre de sesión: admin@campamento.com
+[2026-02-18 20:27:46] [WARNING] Intento de inicio de sesión fallido: jennifer@gmail.com
+[2026-02-18 20:28:03] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-02-18 20:30:48] [INFO] Cierre de sesión: admin@campamento.com
+[2026-02-18 20:31:22] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-02-18 20:49:34] [INFO] Inicio de sesión exitoso: admin@campamento.com
