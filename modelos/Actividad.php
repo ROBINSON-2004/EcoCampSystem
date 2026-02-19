@@ -3,7 +3,7 @@ require_once RUTA_CONFIG . '/conexion.php';
 
 /**
  * Clase Actividad
- * Modelo para gestionar actividades del campamento
+ * Modelo para gestionar actividades del campamento con auto-limpieza de calendario
  */
 class Actividad {
     private $conexion;
@@ -15,6 +15,7 @@ class Actividad {
     public $descripcion;
     public $tipo_actividad;
     public $ubicacion;
+    public $fecha_actividad; // Nueva propiedad indispensable para el calendario
     public $duracion_minutos;
     public $capacidad_maxima;
     public $edad_minima;
@@ -29,25 +30,49 @@ class Actividad {
     }
     
     /**
+     * OBTIENE ACTIVIDADES PARA EL CALENDARIO (Solo las que no han pasado)
+     * Este es el método que "vacía" el calendario automáticamente
+     */
+    public function leerActividadesVigentes($mes = null, $anio = null) {
+        $consulta = "SELECT * FROM " . $this->tabla . " 
+                    WHERE estado = 'activo' 
+                    AND fecha_actividad >= CURDATE()"; // Filtro de auto-vaciado
+        
+        if ($mes) $consulta .= " AND MONTH(fecha_actividad) = :mes";
+        if ($anio) $consulta .= " AND YEAR(fecha_actividad) = :anio";
+        
+        $consulta .= " ORDER BY fecha_actividad ASC, nombre_actividad ASC";
+        
+        $stmt = $this->conexion->prepare($consulta);
+        if ($mes) $stmt->bindParam(':mes', $mes);
+        if ($anio) $stmt->bindParam(':anio', $anio);
+        
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
      * Crea una nueva actividad
      */
     public function crear() {
         $consulta = "INSERT INTO " . $this->tabla . " 
-                    (nombre_actividad, descripcion, tipo_actividad, ubicacion, duracion_minutos,
+                    (nombre_actividad, descripcion, tipo_actividad, ubicacion, fecha_actividad, duracion_minutos,
                      capacidad_maxima, edad_minima, edad_maxima, materiales_necesarios, 
                      instrucciones, estado)
-                    VALUES (:nombre, :descripcion, :tipo, :ubicacion, :duracion,
+                    VALUES (:nombre, :descripcion, :tipo, :ubicacion, :fecha, :duracion,
                             :capacidad, :edad_min, :edad_max, :materiales, :instrucciones, :estado)";
         
         $stmt = $this->conexion->prepare($consulta);
         
-        $this->nombre_actividad = htmlspecialchars(strip_tags($this->nombre_actividad));
-        $this->descripcion = htmlspecialchars(strip_tags($this->descripcion));
+        // Blindaje PHP 8.2+ para evitar errores con null
+        $this->nombre_actividad = htmlspecialchars(strip_tags($this->nombre_actividad ?? ''));
+        $this->descripcion = htmlspecialchars(strip_tags($this->descripcion ?? ''));
         
         $stmt->bindParam(':nombre', $this->nombre_actividad);
         $stmt->bindParam(':descripcion', $this->descripcion);
         $stmt->bindParam(':tipo', $this->tipo_actividad);
         $stmt->bindParam(':ubicacion', $this->ubicacion);
+        $stmt->bindParam(':fecha', $this->fecha_actividad);
         $stmt->bindParam(':duracion', $this->duracion_minutos);
         $stmt->bindParam(':capacidad', $this->capacidad_maxima);
         $stmt->bindParam(':edad_min', $this->edad_minima);
@@ -73,45 +98,28 @@ class Actividad {
         
         $fila = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($fila) {
-            $this->nombre_actividad = $fila['nombre_actividad'];
-            $this->descripcion = $fila['descripcion'];
-            $this->tipo_actividad = $fila['tipo_actividad'];
-            $this->ubicacion = $fila['ubicacion'];
-            $this->duracion_minutos = $fila['duracion_minutos'];
-            $this->capacidad_maxima = $fila['capacidad_maxima'];
-            $this->edad_minima = $fila['edad_minima'];
-            $this->edad_maxima = $fila['edad_maxima'];
-            $this->materiales_necesarios = $fila['materiales_necesarios'];
-            $this->instrucciones = $fila['instrucciones'];
-            $this->estado = $fila['estado'];
+            foreach ($fila as $key => $value) {
+                if (property_exists($this, $key)) $this->$key = $value;
+            }
             return true;
         }
         return false;
     }
     
     /**
-     * Obtiene todas las actividades
+     * Obtiene todas las actividades (Sin filtro de fecha, para administración)
      */
     public function leerTodas($tipo = null, $estado = null) {
         $consulta = "SELECT * FROM " . $this->tabla . " WHERE 1=1";
         
-        if ($tipo) {
-            $consulta .= " AND tipo_actividad = :tipo";
-        }
-        if ($estado) {
-            $consulta .= " AND estado = :estado";
-        }
+        if ($tipo) $consulta .= " AND tipo_actividad = :tipo";
+        if ($estado) $consulta .= " AND estado = :estado";
         
-        $consulta .= " ORDER BY nombre_actividad ASC";
+        $consulta .= " ORDER BY fecha_actividad ASC, nombre_actividad ASC";
         
         $stmt = $this->conexion->prepare($consulta);
-        
-        if ($tipo) {
-            $stmt->bindParam(':tipo', $tipo);
-        }
-        if ($estado) {
-            $stmt->bindParam(':estado', $estado);
-        }
+        if ($tipo) $stmt->bindParam(':tipo', $tipo);
+        if ($estado) $stmt->bindParam(':estado', $estado);
         
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -126,6 +134,7 @@ class Actividad {
                         descripcion = :descripcion,
                         tipo_actividad = :tipo,
                         ubicacion = :ubicacion,
+                        fecha_actividad = :fecha,
                         duracion_minutos = :duracion,
                         capacidad_maxima = :capacidad,
                         edad_minima = :edad_min,
@@ -137,13 +146,14 @@ class Actividad {
         
         $stmt = $this->conexion->prepare($consulta);
         
-        $this->nombre_actividad = htmlspecialchars(strip_tags($this->nombre_actividad));
-        $this->descripcion = htmlspecialchars(strip_tags($this->descripcion));
+        $this->nombre_actividad = htmlspecialchars(strip_tags($this->nombre_actividad ?? ''));
+        $this->descripcion = htmlspecialchars(strip_tags($this->descripcion ?? ''));
         
         $stmt->bindParam(':nombre', $this->nombre_actividad);
         $stmt->bindParam(':descripcion', $this->descripcion);
         $stmt->bindParam(':tipo', $this->tipo_actividad);
         $stmt->bindParam(':ubicacion', $this->ubicacion);
+        $stmt->bindParam(':fecha', $this->fecha_actividad);
         $stmt->bindParam(':duracion', $this->duracion_minutos);
         $stmt->bindParam(':capacidad', $this->capacidad_maxima);
         $stmt->bindParam(':edad_min', $this->edad_minima);
@@ -166,4 +176,3 @@ class Actividad {
         return $stmt->execute();
     }
 }
-?>

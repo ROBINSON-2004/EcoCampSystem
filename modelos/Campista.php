@@ -121,11 +121,14 @@ class Campista {
     /**
      * ACTUALIZAR DATOS EN TABLA 'campistas'
      */
+    // modelos/Campista.php
+
     public function actualizar() {
         $sql = "UPDATE campistas SET 
                 nombre = :nom, 
                 apellido = :ape, 
                 fecha_nacimiento = :fec, 
+                edad = :eda, 
                 genero = :gen, 
                 notas_especiales = :not 
                 WHERE id_campista = :id";
@@ -136,16 +139,16 @@ class Campista {
                 ':nom' => $this->nombre,
                 ':ape' => $this->apellido,
                 ':fec' => $this->fecha_nacimiento,
+                ':eda' => $this->edad, // ¡Esta línea es la clave!
                 ':gen' => $this->genero,
                 ':not' => $this->notas_especiales,
                 ':id'  => $this->id_campista
             ]);
         } catch (PDOException $e) {
-            registrar_log("Error SQL en actualizar: " . $e->getMessage(), 'ERROR');
+            registrar_log("Error al actualizar campista: " . $e->getMessage(), 'ERROR');
             return false;
         }
     }
-
     /**
      * CREAR NUEVO REGISTRO
      */

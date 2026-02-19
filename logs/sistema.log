@@ -441,3 +441,29 @@
 [2026-02-18 20:30:48] [INFO] Cierre de sesión: admin@campamento.com
 [2026-02-18 20:31:22] [INFO] Inicio de sesión exitoso: admin@campamento.com
 [2026-02-18 20:49:34] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-02-18 20:55:21] [WARNING] Intento de inicio de sesión fallido: jennifer@gmail.com
+[2026-02-18 20:55:41] [WARNING] Intento de inicio de sesión fallido: jennifer@gmail.com
+[2026-02-18 20:59:24] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-02-18 20:59:43] [WARNING] Intento de inicio de sesión fallido: jennifer@gamil.com
+[2026-02-18 21:00:01] [INFO] Inicio de sesión exitoso: jennifer@gmail.com
+[2026-02-18 21:00:57] [INFO] Padre actualizado: ID 4
+[2026-02-18 21:01:11] [INFO] Padre actualizado: ID 2
+[2026-02-18 21:04:34] [INFO] Cambio de estado exitoso: ID 8 a aprobado
+[2026-02-18 21:04:48] [INFO] Cambio de estado exitoso: ID 13 a pendiente
+[2026-02-18 21:04:57] [INFO] Cambio de estado exitoso: ID 7 a pendiente
+[2026-02-18 21:30:59] [INFO] Expediente ID 15 actualizado correctamente.
+[2026-02-18 22:25:51] [INFO] Campista 15 -> Grupo 6
+[2026-02-18 22:25:52] [INFO] Campista 14 -> Grupo 6
+[2026-02-18 22:25:53] [INFO] Campista 8 -> Grupo 6
+[2026-02-18 22:25:54] [INFO] Campista 9 -> Grupo 6
+[2026-02-18 22:28:03] [INFO] Grupo actualizado: ID 6
+[2026-02-18 22:57:04] [INFO] Actividad programada: Grupo 6 para el 2026-02-19
+[2026-02-18 23:04:31] [INFO] Actividad programada con éxito para el grupo 5
+[2026-02-18 23:05:00] [INFO] Actividad programada con éxito para el grupo 6
+[2026-02-18 23:09:44] [INFO] Actividad programada con éxito para el grupo 6
+[2026-02-18 23:10:28] [INFO] Cierre de sesión: admin@campamento.com
+[2026-02-18 23:10:31] [INFO] Inicio de sesión exitoso: admin@campamento.com
+[2026-02-18 23:10:34] [INFO] Asistencia registrada: Campista 15 - 2026-02-18
+[2026-02-18 23:10:35] [INFO] Asistencia registrada: Campista 14 - 2026-02-18
+[2026-02-18 23:10:36] [INFO] Asistencia registrada: Campista 8 - 2026-02-18
+[2026-02-18 23:10:37] [INFO] Asistencia registrada: Campista 9 - 2026-02-18

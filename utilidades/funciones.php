@@ -129,11 +129,21 @@ function formatear_fecha($fecha, $incluir_hora = false) {
  * @param string $fecha_nacimiento Fecha en formato Y-m-d
  * @return int Edad en años
  */
+// utilidades/funciones.php
+/**
+ * Calcula la edad exacta en años basándose en la fecha de nacimiento
+ */
 function calcular_edad($fecha_nacimiento) {
-    $fecha_nac = new DateTime($fecha_nacimiento);
-    $hoy = new DateTime();
-    $edad = $hoy->diff($fecha_nac);
-    return $edad->y;
+    if (empty($fecha_nacimiento)) return 0;
+    
+    try {
+        $nacimiento = new DateTime($fecha_nacimiento);
+        $hoy = new DateTime();
+        $diferencia = $hoy->diff($nacimiento);
+        return $diferencia->y; // Retorna solo el número de años
+    } catch (Exception $e) {
+        return 0;
+    }
 }
 
 /**

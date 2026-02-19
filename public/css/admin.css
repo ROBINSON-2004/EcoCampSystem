@@ -525,3 +525,165 @@ body {
 .page-header-right .btn {
     padding: 8px 18px;
 }
+
+/* ============================================
+   ESTILOS: NOTIFICACIONES EcoCampSystem 2026
+   ============================================ */
+
+:root {
+    --primary: #000000;
+    --unread-bg: #f0f4ff;
+    --text-main: #2d3748;
+    --text-muted: #718096;
+    --success: #48bb78;
+    --bg-body: #f7fafc;
+}
+
+body {
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+/* Botón Volver */
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    color: var(--primary);
+    font-weight: 600;
+    margin-bottom: 25px;
+    transition: transform 0.2s;
+}
+
+.btn-back:hover {
+    transform: translateX(-5px);
+}
+
+.btn-back span {
+    margin-right: 8px;
+    font-size: 1.2rem;
+}
+
+/* Cabecera */
+.header-section {
+    margin-bottom: 35px;
+    border-bottom: 2px solid #edf2f7;
+    padding-bottom: 15px;
+}
+
+.header-section h1 {
+    font-size: 2rem;
+    margin: 0;
+    color: #1a202c;
+}
+
+.header-section p {
+    color: var(--text-muted);
+    margin-top: 5px;
+}
+
+/* Tarjeta de Notificación */
+.notif-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border-left: 6px solid #e2e8f0; /* Color para leídas */
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+}
+
+.notif-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Notificación NO leída */
+.notif-unread {
+    background-color: var(--unread-bg);
+    border-left-color: var(--primary); /* Azul resaltado */
+}
+
+.notif-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.notif-date {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.badge-new {
+    background-color: var(--success);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+}
+
+.notif-title {
+    margin: 0 0 10px 0;
+    font-size: 1.25rem;
+    color: #1a202c;
+}
+
+.notif-body {
+    color: #4a5568;
+    margin-bottom: 20px;
+    white-space: pre-line; /* Respeta los saltos de línea del nl2br */
+}
+
+/* Footer de la tarjeta */
+.notif-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #edf2f7;
+    padding-top: 15px;
+}
+
+.notif-sender {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.btn-leer {
+    background-color: var(--primary);
+    color: white;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.btn-leer:hover {
+    background-color: #3c55a5;
+    box-shadow: 0 2px 4px rgba(74, 105, 189, 0.2);
+}
+
+/* Estado vacío */
+.notif-empty {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 12px;
+    color: var(--text-muted);
+}

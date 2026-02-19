@@ -18,8 +18,10 @@ $modelo = new Notificacion();
 /**
  * Obtenemos las notificaciones. 
  * El modelo ya usa 'u.nombre' para evitar el error de SQL
+ * 
  */
 $notificaciones = $modelo->obtenerPorUsuario($id_usuario);
+
 ?>
 <!DOCTYPE html>
 <html lang="es">
